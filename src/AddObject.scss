@@ -1,0 +1,202 @@
+.fatherAddObject{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    .wrapperAddObject{            
+        width: 80%;
+        height: 95%;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #fff;
+        
+        .AddObjectTitle{
+            height: 8%;
+            width: 100%;
+            background-color: #ee4f11;  
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            .AddObjectTitleItem{  
+              text-align: center;
+              color: #fff;
+              font-size: 30px;
+              font-weight: 600;          
+            }
+
+            @media (max-width: 768px) {
+                    height: 10%;    
+                    width: 50%; 
+                    position: fixed;             
+                    top: 0px;       
+                    right: 25%; 
+                    background-color: transparent;                      
+                    z-index: 5000;       
+                    display: flex;   
+                    justify-content: center;
+                    align-items: center;   
+                    .AddObjectTitleItem{             
+                      text-align: center;
+                      color: #000000;
+                      font-size: 25px;
+                      font-weight: 600;                                       
+                    }
+            }
+
+        }
+        .fatherAddImage{  
+            height: 35%;
+            width: 100%;     
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            
+            .Wrapimage{
+              width: 200px;
+              height: 200px;
+              display: flex;   
+              justify-content: center;
+              align-items: center;
+              position: relative;   
+              .image-containerDevice {  
+                width: 300px;  /* Chiều rộng cố định */
+                height: 200px; /* Chiều cao cố định */
+                overflow: hidden; /* Tránh bị tràn nội dung */
+                display: flex;
+                align-items: center; /* Canh giữa ảnh theo chiều dọc */
+                justify-content: center; /* Canh giữa ảnh theo chiều ngang */
+                background-color: #f0f0f0; /* Màu nền để dễ nhìn */
+                border: 2px solid #000000;
+                position: relative;
+                .uploaded-imageDevice {
+                  width: 100%; /* Chiều ngang đầy đủ theo div */
+                  height: auto; /* Giữ tỷ lệ ảnh, không bị méo */
+                }
+               
+            }
+            .buttonUploadDevice{
+              z-index: 1000;
+              position: absolute;
+              bottom: -5px;
+              right: -40px;           
+              
+              &:hover{
+                  cursor: pointer;
+              }
+          
+              .IconButtonUploadDevice{
+                      font-size: 40px;
+                      z-index: 1000;
+                      color: #000000;
+                     
+              }
+            }
+            
+            }
+            
+              // .image-container 
+              
+              // .image-container img:active {
+                
+              // }
+
+      
+        }
+
+        .wrapAddObject{  
+            margin-top: 20px;
+            height: 60%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          
+            .wrapAddObjectItem{     
+                width: 40%;
+                height: 14%;
+                margin-bottom: 10px;
+                .wrapAddObjectItemFirst{
+                   
+                   height: 50%;
+                   width: 60%;
+                   display: flex;
+                   font-weight: 600;
+                   align-items: center;
+                   column-gap: 20px;
+                   .IconAddObject{   
+                            font-size: 30px;
+                   }
+                   .titleAddObject{  
+                            font-size: 17px;          
+                   }
+
+                }
+                .wrapAddObjectItemSecond{   
+                    
+                    width: 100%;
+                    height: 50%;  
+                    display: flex;
+                    align-items: center;
+                    input{
+                        width: 100%;   
+                        border: none;             /* Xóa toàn bộ viền mặc định */
+                        border-bottom: 1px solid #666666; /* Chỉ thêm viền phía dưới */
+                        outline: none;            /* Xóa viền khi focus */
+                        padding: 5px 0;           /* Khoảng cách trên dưới */
+                        font-size: 16px;          /* Kích thước chữ */
+                        width: 100%;              /* Độ rộng toàn dòng hoặc tùy chỉnh */
+                        box-sizing: border-box;   /* Bao gồm padding vào kích thước tổng */
+                    }
+                    
+                }
+
+                @media (max-width: 768px) {
+                  width: 100%;
+                }
+            
+            }
+
+            .divButtonAdd{
+                margin-top: 20px;
+                width: 30%;
+                height: 10%;
+                background-color: #ee4f11;
+                color: #fff;
+                font-size: 20px;
+                font-weight: 600;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 20px;
+                &:hover{
+                    background-color: #ef794a;
+                    cursor: pointer;
+                }
+
+                @media (max-width: 768px) {
+                  width: 50%;
+                }
+            }
+           
+        
+
+        }
+        
+
+        @media (max-width: 768px) {
+          width: 90%;
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+        
+
+        
+
+    }
+}

@@ -654,12 +654,8 @@ return (
                                     className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${isOn ? 'translate-x-7' : ''}`}
                                 ></div>
                             </div>
-                            <span className={`text-lg font-semibold ${isOn ? 'text-green-500' : 'text-red-500'}`}>{isOn ? "ON" : "OFF"}</span>
+                            <span className={`text-sm font-semibold ${isOn ? 'text-green-500' : 'text-red-500'}`}>{isOn ? "ON" : "OFF"}</span>
                           </div>
-
-
-                            {/* <button className='btn-on' onClick={() => callAPIUpdateObjectById("ON")}>ON</button>
-                            <button className='btn-off' onClick={() => callAPIUpdateObjectById("OFF")}>OFF</button> */}
                           </div>
                         </div>
 
@@ -674,14 +670,14 @@ return (
                           <div className="informationDeviceItemSecond">
                               <div className="flex items-center gap-3">
                                 <div 
-                                    className={`w-20 h-7 flex items-center rounded-full p-1 cursor-pointer transition-all ${isEmergency ? 'bg-red-500' : 'bg-green-500'}`} 
+                                    className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition-all ${!isEmergency ? 'bg-green-500' : 'bg-red-500'}`} 
                                     onClick={toggleSwitchWarning}
                                 >
                                     <div 
-                                        className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${isEmergency ? 'translate-x-12' : ''}`}
+                                        className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${isEmergency ? 'translate-x-7' : ''}`}
                                     ></div>
                                 </div>
-                                <span className={`text-lg font-semibold ${isEmergency ? 'text-red-500' : 'text-green-500'}`}>{isEmergency ? "EMERGENCY" : "NORMAL"}</span>
+                                <span className={`text-sm font-semibold ${isEmergency ? 'text-red-500' : 'text-green-500'}`}>{isEmergency ? "EMERGENCY" : "NORMAL"}</span>
                               </div>
                                     {/* <button className='btn-off' onClick={() => callAPIUpdateObjectById("ON")}>EMERGENCY</button>
                                     <button className='btn-on' onClick={() => callAPIUpdateObjectById("OFF")}>NORMAL</button> */}

@@ -14,7 +14,6 @@
         background-color: #fff;
         overflow: hidden;
         border-radius: 15px;
-        
         .SettingTitle{
             height: 8%;
             width: 100%;
@@ -47,8 +46,6 @@
               }
           
             }
-            
-
         }
         .SettingFirst{
             height: 35%;
@@ -109,6 +106,7 @@
               }
             }
             }
+
               .divChangeNameDevice{     
                 margin-top: 10px;   
                 width: 25%;  
@@ -130,7 +128,14 @@
                              
               }
 
+              @media (max-width: 768px) {                
+                height: 42%;   
+
+              }
+
         }
+
+
         .Settingline{
           width: 100%;
           height: 0.4%;

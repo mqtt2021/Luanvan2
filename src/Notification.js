@@ -307,7 +307,7 @@ const { unreadCount, setUnreadCount  } =  useContext(UserContext);
                           </div>
                           {item.isAcknowledge ?
                           
-                            <div className = 'itemNotificationecondItem'>                            
+                            <div className = 'itemNotificationecondItem' style={{ fontStyle: "italic" }}>                            
                                     Đã xem
                             </div>  
 

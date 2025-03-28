@@ -75,7 +75,7 @@
     
                     display: flex;
                     width: 100%; 
-                    height: 10%;  
+                    height: 15%;  
                     border-radius: 10px;
                     background-color: rgb(255, 255, 255);   
                     margin-bottom: 10px;
@@ -88,14 +88,16 @@
                         flex-direction: column;
                         justify-content: space-evenly;
                         align-items: center;
-                        column-gap: 20px;
-                        width: 80%;
-                       
+                        column-gap: 25px;
+                        width: 85%;  
+                        
                         .filterItemHistoryDevice{
-                            width: 100%;          
+                            padding-right: 5%;
+                            width: 90%;          
                             display: flex;
                             align-items: center;
-                            justify-content: space-around;  
+                            column-gap: 1%;  
+                            
                             
                         }
                     }
@@ -104,25 +106,25 @@
                   
                     .filterItemButtonHistoryDevice{
                       // z-index: 2998;  
-                      width: 17%;
+                      width: 25%;
                       
                       button{
-                          width: 80%;
+                          width: 90%;
                           height: 100%;
                           text-align: center;
+                          font-size: 15px;
                       }
                     }
                 }
             }
 
 
-            .mapStolenLine{
-    
+            .mapStolenLineDevice{  
                 height: 85%;   
                 width: 100%;   
                 overflow: hidden;
-                border-radius: 20px;
-                background-color: red;    
+                border-radius: 15px;
+                
                 position: relative;  
                 .HistoryDevicesDeviceTitle{  
                     
@@ -145,17 +147,25 @@
                     }
         
                 }
+
                 .leaflet-container {
                     height: 100%;  
                     width: 100%;        
+                }
+
+                @media (max-width: 768px) {
+                  
+                    height: 85%;
+                  
+    
                 }
             }
 
             @media (max-width: 768px) {
                 width: 100%;
                 height: 100%;
-                margin-top: 20px; 
-
+                margin-top: 20px;
+                column-gap: 0px;      
             }
     }  
    
@@ -163,8 +173,6 @@
 
     @media (max-width: 768px) {  
         margin-top: 0px;
-        // position: fixed;   
-        // top: 10%;
         width: 100%;   
         height: 100%; 
         

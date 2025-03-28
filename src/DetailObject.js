@@ -665,7 +665,7 @@ return (
                               <div className='informationObjectItemFirstIcon'>
                                   <GrConnect className='informationObjectItemIcon'/>  
                               </div>        
-                              <div className='informationObjectItemFirstTitle'>Thiết bị đang kết nối:</div>
+                              <div className='informationObjectItemFirstTitle'>Thiết bị kết nối:</div>
                           </div> 
                             
                           <div className='informationObjectItemSecond'>

@@ -443,7 +443,7 @@ function HistoryObject() {
 
             <div className='TitleMobileHistoryObject'>
                        <div className='TitleItemMoblieHistoryObject'>
-                             { `Lộ trình đối tượng ${Object.name}` }    
+                             { `Lộ trình ${Object.name}` }    
                         </div> 
             </div>
              

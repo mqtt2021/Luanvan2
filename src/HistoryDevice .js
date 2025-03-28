@@ -446,7 +446,7 @@ function HistoryDevicesDevice() {
                               </div>                                       
                         </div>
 
-                  <div className='mapStolenLine'> 
+                  <div className='mapStolenLineDevice'> 
                     <div className='HistoryDevicesDeviceTitle'>
                        <div className='HistoryDevicesDeviceTitleItem'>
                               { `Lộ trình di chuyển thiết bị ${Device.name}` }     

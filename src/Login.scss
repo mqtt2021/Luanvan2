@@ -183,7 +183,7 @@
     }
 
 
-     @media (max-width: 768px) {
+    @media (max-width: 768px) {
           width: 90%;
           
           .titleLogin{   
@@ -191,9 +191,9 @@
             background: #67d0eb;
             border-radius: 5px 5px 0 0;
             color: #000000;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 600;
-            display: flex;
+            display: flex;    
             align-items: center;
             justify-content: center;
           }
@@ -237,61 +237,58 @@
               display: flex;
               justify-content: center;
               align-items: center;
-               .button-login{
-              appearance: none;
-              backface-visibility: hidden;
-              background-color:  #18c2ed;
-              border-radius: 8px;
-              border-style: none;
-              box-shadow: rgba(39, 174, 96, .15) 0 4px 9px;
-              box-sizing: border-box;
-              color: #000000;
-              cursor: pointer;
-              display: inline-block;
-              font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
-              font-size: 16px;
-              font-weight: 600;
-              letter-spacing: normal;
-              line-height: 1.5;
-              outline: none;
-              overflow: hidden;
-              padding: 13px 20px;
-              position: relative;
-              text-align: center;
-              text-decoration: none;
-              transform: translate3d(0, 0, 0);
-              transition: all .3s;
-              user-select: none;
-              -webkit-user-select: none;
-              touch-action: manipulation;
-              vertical-align: top;
-              white-space: nowrap;
-            
-            
-            &:hover {
-              background-color:  #0993b6;
-              opacity: 1;
-              transform: translateY(0);  
-              transition-duration: .35s;
-              box-shadow: rgba(39, 174, 96, .2) 0 6px 12px;
-            }
-            
-            &:active {
-              transform: translateY(2px);
-              transition-duration: .35s;
-            }
-            
-            
-            }
+              .button-login{
+                      appearance: none;
+                      backface-visibility: hidden;
+                      background-color:  #18c2ed;
+                      border-radius: 8px;
+                      border-style: none;
+                      box-shadow: rgba(39, 174, 96, .15) 0 4px 9px;
+                      box-sizing: border-box;
+                      color: #000000;
+                      cursor: pointer;
+                      display: inline-block;
+                      font-family: Inter,-apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+                      font-size: 16px;
+                      font-weight: 600;
+                      letter-spacing: normal;
+                      line-height: 1.5;
+                      outline: none;
+                      overflow: hidden;
+                      padding: 13px 20px;
+                      position: relative;
+                      text-align: center;
+                      text-decoration: none;
+                      transform: translate3d(0, 0, 0);
+                      transition: all .3s;
+                      user-select: none;
+                      -webkit-user-select: none;
+                      touch-action: manipulation;
+                      vertical-align: top;
+                      white-space: nowrap;
+
+                    &:hover {
+                      background-color:  #0993b6;
+                      opacity: 1;
+                      transform: translateY(0);  
+                      transition-duration: .35s;
+                      box-shadow: rgba(39, 174, 96, .2) 0 6px 12px;
+                    }
+
+                    &:active {
+                      transform: translateY(2px);
+                      transition-duration: .35s;
+                    }           
+              }
             }
       
             .wrapregisterLogin{
+            
               display: flex;
               column-gap: 20px;
               justify-content: center;
-              
-              .containerRegisterLogin{      
-                width: 80%;
+              .containerRegisterLogin{       
+                width: 95%;
                 display: flex;
                 justify-content: space-between;
                 a{

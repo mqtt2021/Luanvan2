@@ -99,6 +99,24 @@ function Login() {
 
   console.log('ListAllCustomer', ListAllCustomer)
 
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+           handleLogin();
+        }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+    };
+
+
+}, [userName, password]);   
+
+
       return (
         <div class="containerLogin">
                     {loading && (
@@ -141,7 +159,10 @@ function Login() {
                     <div class="rowLogin divbutton">
                       <button   
                                 className='button-login'
-                                onClick={handleLogin}>
+                                onClick={handleLogin}
+                                 
+                                >
+                                
                           Đăng nhập
                       </button>
                   
@@ -150,12 +171,13 @@ function Login() {
                         <div className='containerRegisterLogin'>
                           <div className='textDonotRegister'>
                               Bạn chưa đăng ký?  
-                          </div>
+                          </div>  
                           <Link to="/Register"> 
                             <div        
                                 className='buttonRegister'
                                 onClick={handleAccessRouteRegister}
                                 disabled={loading} // Vô hiệu hóa nút khi đang tải
+                                 
                             >
                                 Đăng ký ngay  
                             </div> 

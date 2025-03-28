@@ -6,8 +6,6 @@
     align-items: center;
     overflow: auto;
 
-
-
     .loadingContainer {
       display: flex;
       flex-direction: column;
@@ -76,7 +74,7 @@
               .InforDetailDeviceTitleItem{           
                   text-align: center;
                   color: #000000;
-                  font-size: 25px;
+                  font-size: 23px;
                   font-weight: 600;                                      
               }
             }
@@ -240,27 +238,27 @@
 
 
                 @media (max-width: 768px) {
-        
                   width: 95%;
-
                   .informationDeviceItemFirst{
-                   
-                    height: 100%;
-                    width: 50%;
-                    display: flex;
-                    font-weight: 400;
-                    align-items: center;
-                    column-gap: 10px;
-                    .informationDeviceItemIcon{
-                     font-size: 17px;
-                    }
-                    .informationDeviceItemFirstTitle{
-                             font-size: 17px;   
-                    }
+                      
+                      height: 100%;
+                      width: 50%;
+                      display: flex;
+                      font-weight: 450;
+                      align-items: center;
+                      column-gap: 10px;
+                      .informationDeviceItemIcon{
+                              font-size: 17px;
+                      }
+                      .informationDeviceItemFirstTitle{
+                               font-size: 15px;   
+                               color: #000000;
+                      }
  
                  }
                  .informationDeviceItemSecond{
-                     width: 50%;
+                     
+                      width: 52%;
                      height: 100%;  
                      display: flex;
                      align-items: center;
@@ -273,7 +271,7 @@
                        flex: 1; /* Đảm bảo cả hai nút có cùng chiều rộng */
                        min-width: 20px; /* Đặt chiều rộng tối thiểu để không quá nhỏ */
                        padding: 5px 5px;
-                       font-size: 13px;
+                       font-size: 10px;
                        text-align: center;
                        border: none;
                        border-radius: 5px;
@@ -304,9 +302,6 @@
                          background-color: green;
                          color: white;
                        }
- 
-                    
- 
                        .alarmTimeInput {
                          padding: 5px;
                          font-size: 16px;
@@ -373,33 +368,34 @@
               border-radius: 0px;
               background-color: rgb(216, 216, 216);   
               margin-bottom: 20px; 
+              
              
 
               .divTime{
+                
                 height: 100%;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-evenly;
                 column-gap: 20px;
-                width: 80%;
+                width: 75%;
                 .filterItemBattery{
-
+                  
                   width: 100%;
                   display: flex;
                   align-items: center;
-                  justify-content: space-around;     
+                   
                 }
               }
 
-              
-              
               .filterItemButtonBattery{
                   // z-index: 2998;  
-                  width: 20%;
+                  width: 25%;
                   button{
-                      width: 80%;
+                      width: 100%;
                       height: 100%;
                       text-align: center;
+                      font-size: 15px;
                   }
 
               }

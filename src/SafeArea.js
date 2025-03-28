@@ -235,7 +235,7 @@ function SafeArea() {
       <div className='wrapSafeArea'>
                 <div className='TitleSafeArea'>   
                     <div className='TitleSafeAreaItem'>
-                          Vùng an toàn cho đối tượng {Object.name}   
+                          Vùng an toàn {Object.name}   
                     </div> 
                 </div>
             

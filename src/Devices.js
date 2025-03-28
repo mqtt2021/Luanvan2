@@ -191,7 +191,7 @@ function Devices() {
                             <TiBatteryCharge className='iconPin'/>
                             <div>
                               {/* {`${item.battery} %`} */}           
-                              {convertDateTimeBefore(item.timeStamp) !== '01-01-2025 00:00:00' ? `${item.battery} %` : `Chưa được cập nhật lần đầu`}
+                              {convertDateTimeBefore(item.timeStamp) !== '01-01-2025 00:00:00' ? `${item.battery} %` : `Chưa cập nhật lần đầu`}
                             </div>      
                           </div>          
                       </div>

@@ -786,11 +786,11 @@ function convertDateTime(inputString) {
                                             <div className ='inforItem'>   
                                                 <div className='title'>Đối tượng được theo dõi:</div>
                                                 <div className='value'>
-                                                      {listObject.find(device => device.gpsDeviceId === item.id )?.name ?? "Không tìm thấy thiết bị"}
+                                                      {listObject.find(device => device.gpsDeviceId === item.id )?.name ?? "Chưa có"}
                                                 </div>
                                             </div> 
                                             <div className ='inforItem'>   
-                                                <div className='title'>Thiết bị theo dõi:</div>
+                                                <div className='title'>Thiết bị theo dõi:</div>               
                                                 <div className='value'>{item.name}</div>
                                             </div> 
 

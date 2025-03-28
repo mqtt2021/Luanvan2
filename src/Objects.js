@@ -18,7 +18,7 @@ import { UserContext } from './usercontext';
 import { IoIosWarning } from "react-icons/io";
 
 function Object() {    
-  
+  const [searchTerm, setSearchTerm] = useState("");
   const {idObjectConnect, setidObjectConnect } = useContext(UserContext); 
   const [listAllObjects,setlistAllObjects] = useState([])  
   const [showModalAddDevice, setshowModalAddDevice] = useState(false);
@@ -176,6 +176,11 @@ function Object() {
         setshowModalAddDevice(true)  
   } 
 
+ // Lọc danh sách thiết bị theo searchTerm
+ const filteredObjects = listAllObjects.filter((device) =>
+  device.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+);
+
 
   console.log('listAllObjects',listAllObjects)
   return (
@@ -190,7 +195,8 @@ function Object() {
                   <div className='divInputFindObject'>
                         <input 
                           type="email" class="form-control" id="exampleInputEmail1" placeholder="Tìm đối tượng"
-                                                  
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}                  
                         />              
                   </div>   
                   <Link  to="/AddObject">                    
@@ -210,7 +216,7 @@ function Object() {
                     </div>
               ) : 
               
-              (listAllObjects.map((item , index)=> (                    
+              (filteredObjects.map((item , index)=> (                    
                 <div className='wrapperContainerObject'>        
                 <div className='containerObject'>
                   <div className='itemObject itemObjectFirst'>

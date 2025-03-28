@@ -135,6 +135,22 @@ function Register() {
    
   },[ ])
 
+   useEffect(() => {
+      const handleKeyDown = (e) => {
+          if (e.key === "Enter") {
+            handleSubcribe();
+          }
+      };
+  
+      window.addEventListener("keydown", handleKeyDown);
+  
+      return () => {
+          window.removeEventListener("keydown", handleKeyDown);
+      };
+  
+  
+  }, [userName, password, phone]);  
+
   
 
       return (   

@@ -1,5 +1,5 @@
 import axios from './customize-axios';
-const url = 'https://mygps.runasp.net'      
+const url = 'https://luanvan-e6gubwgvhcegfyf4.koreacentral-01.azurewebsites.net'      
 const fetchAllUsers = (page) => {
     return axios.get(`/api/users?page=${page}`)
 }

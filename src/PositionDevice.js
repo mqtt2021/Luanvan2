@@ -190,7 +190,7 @@ function PositionDevice() {
 
     useEffect( () => {
       let connection = new signalR.HubConnectionBuilder()   
-          .withUrl("https://luanvan-e6gubwgvhcegfyf4.koreacentral-01.azurewebsites.net/NotificationHub")   
+          .withUrl("https://mygps.runasp.net/NotificationHub")   
           .withAutomaticReconnect()    
           .build();     
       // Bắt đầu kết nối   

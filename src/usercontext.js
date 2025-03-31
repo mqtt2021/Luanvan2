@@ -18,6 +18,8 @@ const UserProvider = ({ children }) => {
   const [displayRoutesTwoPoint, setDisplayRoutesTwoPoint] = useState(false); 
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
+
+  const [listNotifications, setListNotifications] = useState([]);
     const [listAllDevices,setlistAllDevices] = useState([]) ;     
     const [inforCustomer, setInforCustomer] = useState({})   ;
     const [phoneNumberCustomer, setPhoneNumberCustomer] = useState('')   ;
@@ -85,7 +87,7 @@ const UserProvider = ({ children }) => {
     displayNav, setDisplayNav, displayRoutesTwoPoint, setDisplayRoutesTwoPoint,isButtonDisabled, setIsButtonDisabled,
     accessRouteRegister, setaccessRouteRegister, idObjectConnect, setidObjectConnect, listAllDevices,setlistAllDevices,
     inforCustomer, setInforCustomer, phoneNumberCustomer, setPhoneNumberCustomer, listObject, setlistObject ,
-    unreadCount, setUnreadCount, accessRouteOTP, setaccessRouteOTP
+    unreadCount, setUnreadCount, accessRouteOTP, setaccessRouteOTP, listNotifications, setListNotifications
      }}>
       {children}    
     </UserContext.Provider>

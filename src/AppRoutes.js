@@ -22,6 +22,7 @@ import AddObject from './AddObject';
 import SafeArea from './SafeArea';
 import HistoryObject from './HistoryObject';  
 import DetailObject from './DetailObject';
+import SafeAreaAddObject from './SafeAreaAddObject';
 function AppRoutes() {
 
   const { user , loginContext, token, setToken, loginTotalLogin, logoutTotalLogin, LoginTotal } = useContext(UserContext);
@@ -58,6 +59,7 @@ function AppRoutes() {
                 {user && user.auth ? <Route path="/EditInforObject" element={<EditInforObject/>} /> : '' }    
                 {user && user.auth ? <Route path="/AddObject" element={<AddObject/>} /> : '' }   
                 {user && user.auth ? <Route path="/SafeArea/:id" element={<SafeArea/>} /> : '' }   
+                {user && user.auth ? <Route path="/SafeAreaAddObjet" element={<SafeAreaAddObject/>} /> : '' }   
             </Routes>          
     </div>
   )

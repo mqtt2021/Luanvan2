@@ -9,7 +9,7 @@ import { IoMdAddCircle } from "react-icons/io";
 import {Link, useNavigate} from "react-router-dom";
 import ModalAddDevice from './settingDevice/AddDevice';
 import axios from 'axios';
-import { url } from './services/UserService';
+import { url } from './services/UserService';  
 import { toast } from 'react-toastify';
 import { UserContext } from './usercontext';   
 function Devices() {

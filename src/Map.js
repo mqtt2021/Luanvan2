@@ -18,16 +18,15 @@ import { UserContext } from './usercontext';
 import { url } from './services/UserService';
 function Map() {  
 
-
   const { center, zoomLevel, setZoomLevel,
           percentBattery, getPositionUser, setCenter,       
           makerOpenPopup, pressPositionWarning,    
-          setChangeNameFromMapToHeader, setMakerOpenPopup,   
+          setChangeNameFromMapToHeader, setMakerOpenPopup,     
           pressPercentBattery, setgetLoggerStolen, displayNav, setDisplayNav, displayRoutesTwoPoint, setDisplayRoutesTwoPoint,
           isButtonDisabled, setIsButtonDisabled , accessRouteRegister, listAllDevices,setlistAllDevices,
           inforCustomer, setInforCustomer, phoneNumberCustomer, setPhoneNumberCustomer, listObject, setlistObject    
         } =  useContext(UserContext);           
-  const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
+  //const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
   const [showModalChangeName, setshowModalChangeName] = useState(false); // hiển thị bảng đổi tên
   const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(5) // độ zoom map
   const [listAllLogger, setListAllLogger]= useState([]) // danh sách tất cả logger
@@ -186,7 +185,7 @@ useEffect(() => {
 
 useEffect(() => {
   if(phoneNumberCustomer !== ''){
-    getAllObject();
+      getAllObject();
   }
 }, [phoneNumberCustomer]);
 
@@ -249,39 +248,33 @@ useEffect(()=>{
 //   }
 // },[isLoadingAPIDevices])  
 
-
-
-
-   
- 
-
-useEffect( () => {
-  let connection = new signalR.HubConnectionBuilder()   
-      .withUrl("https://mygps.runasp.net/NotificationHub")   
-      .withAutomaticReconnect()    
-      .build();     
-  // Bắt đầu kết nối   
-  connection.start()   
-      .then(() => {  
-          console.log('Kết nối thành công!');
-      })
-      .catch(err => {
-          console.error('Kết nối thất bại: ', err);
-      });
-  // Lắng nghe sự kiện kết nối lại
-  connection.onreconnected(connectionId => {
-      console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
-  });
-  // Lắng nghe sự kiện đang kết nối lại
-  connection.onreconnecting(error => {
-      console.warn('Kết nối đang được thử lại...', error);
-  });
-  connection.on("SendNotificationG001", data => {   
-        const obj = JSON.parse(data);
-        console.log(obj)  
-        // getLogger()                 
-  });                      
-}, [] )
+// useEffect( () => {
+//   let connection = new signalR.HubConnectionBuilder()   
+//       .withUrl("https://mygps.runasp.net/NotificationHub")   
+//       .withAutomaticReconnect()    
+//       .build();     
+//   // Bắt đầu kết nối     
+//   connection.start()   
+//       .then(() => {  
+//           console.log('Kết nối thành công!');
+//       })
+//       .catch(err => {
+//           console.error('Kết nối thất bại: ', err);
+//       });
+//   // Lắng nghe sự kiện kết nối lại
+//   connection.onreconnected(connectionId => {
+//       console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
+//   });
+//   // Lắng nghe sự kiện đang kết nối lại
+//   connection.onreconnecting(error => {
+//       console.warn('Kết nối đang được thử lại...', error);
+//   });
+//   connection.on("SendNotificationG001", data => {   
+//         const obj = JSON.parse(data);
+//         console.log(obj)  
+//         // getLogger()                 
+//   });                      
+// }, [] )
                                                        
 const handleMapClickGetLocation = (e) => {  // lấy tọa độ khi Click vô Map
   console.log('lat: '+ e.latlng.lat)

@@ -4,7 +4,7 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css'; 
 import axios from 'axios';
-import './SafeArea.scss'
+import './SafeAreaAddObject.scss'
 import { MapContainer, TileLayer,Marker,useMapEvent , Circle    } from "react-leaflet";
 import L from 'leaflet'
 import { ToastContainer } from 'react-toastify';
@@ -16,7 +16,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import useGeoLocation from "./useGeoLocation"
 
-function SafeArea() {                
+function SafeAreaAddObject() {                
   const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
     const PositionSafe = new L.Icon({ // vị trí GPS khi bị trộm đi qua
         iconUrl: require("./asset/images/maker_user.png" ),
@@ -94,36 +94,6 @@ function SafeArea() {
       }
     };
 
-
-    // const getDeviceById = async () => { 
-      
-    //   setIsLoading(true); // Bắt đầu loading
-    //   let success = false;
-
-    //   while (!success) {   
-    //     try {
-    //       const response = await axios.get(`${url}/GPSDevice/GetGPSDeviceById?Id=${idDevice}`);         
-    //       const DeviceData = response.data;
-    
-    //       // Kiểm tra nếu dữ liệu nhận được hợp lệ
-    //       if (DeviceData) {    
-    //         // const ListStolen = LoggerData.filter((item) => item.stolenLines.length > 0);
-    //         setDevice(DeviceData); 
-    //         console.log(DeviceData)       
-    //         success = true; // Dừng vòng lặp khi dữ liệu hợp lệ và được xử lý
-    //       } else {
-    //         alert('ReLoad');
-    //       }
-    //     } catch (error) {
-    //       console.error('getDeviceById error, retrying...', error);  
-    //       await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
-    //     }
-    //   }
-
-     
-    // };
-
-
     const callAPIUpdateObjectById = async () => {
       let success = false;
       while (!success) {   
@@ -174,10 +144,6 @@ function SafeArea() {
       } 
     }, [Object])
 
- 
-
-    
-
     useEffect(() => { // Cập nhật bản đồ với giá trị mới của center và ZOOM_LEVEL
         if (mapRef.current) {
               mapRef.current.setView(center, ZOOM_LEVEL);  
@@ -223,15 +189,11 @@ function SafeArea() {
     };
 
     const handleSetRadius = ( ) => {
-      setLoading(true); // Bắt đầu trạng thái tải
+      setLoading(true); // Bắt đầu trạng thái tải  
       callAPIUpdateObjectById()
 
     }
 
-  
-  console.log(Object)  
-  console.log(Device)
-  
   return (   
     <div className='SafeArea'>
                     {loading && (
@@ -334,4 +296,4 @@ function MyClickHandlerGetLocation({ onClick }) {
   });
   return null;   
   } 
-export default SafeArea    
+export default SafeAreaAddObject      

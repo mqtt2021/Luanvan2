@@ -50,9 +50,9 @@ function DetailObject() {
     const [DeviceConnectObject, setDeviceConnectObject] = useState({id:'', latitude: 0 , longitude: 0 });   
     const [listHistorBattery, setListHistorBattery] = useState([]);   
     const [choseImage, setchoseImage] = useState(false);
-    
-    
-    const getDeviceById = async (idDevice) => { 
+    const [imageURL, setImageURL] = useState('');
+          const navigate = useNavigate();       
+    const getDeviceById = async (idDevice) => {               
       let success = false;
       while (!success) {   
         try {
@@ -78,8 +78,9 @@ function DetailObject() {
 
      
     };
-
-    const CallAPIUpdateImgObjectById = async () => {             
+                           
+    const CallAPIUpdateImgObjectById = async (linkImage) => {                                  
+      console.log('Object', Object)                              
       let success = false;  
       while (!success) {
         try {
@@ -96,7 +97,7 @@ function DetailObject() {
             alert('ReLoad');
           }
         } catch (error) {
-          console.error('Get All Devices error, retrying...', error);  
+          console.error('CallAPIUpdateImgObjectById error, retrying...', error);  
           await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
         }
       }
@@ -105,12 +106,23 @@ function DetailObject() {
 
     };
 
-
-        useEffect(()=>{
-          if(Object.id !== ''){
-            CallAPIUpdateImgObjectById()
-          }
-        },[choseImage])
+    
+    useEffect(() => {                  
+      if(Object.id !== ''){                   
+        CallAPIUpdateImgObjectById()                   
+      }
+    },[choseImage])      
+    
+    
+    useEffect(() => {                  
+      if(Object.id !== ''){                   
+        setObject((prevDevice) => ({
+                ...prevDevice, // Giữ lại các thuộc tính cũ
+                imagePath: imageURL     
+        }))    
+        setchoseImage(pre => !pre)          
+      }
+    },[imageURL])                 
     
     const getObjectById = async () => { 
       
@@ -548,20 +560,137 @@ const handleScanAndShow = async () => {
     //     setMessage(`Lỗi: ${error.message}`);
     //   }
     // };
-    const handleImageUpload = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
-        setImage(imageUrl);
 
-        setObject((prevDevice) => ({
-          ...prevDevice, // Giữ lại các thuộc tính cũ
-          imagePath: imageUrl 
-        }))  
-        setchoseImage(pre=>!pre)
+
+    
+
+
+    // const handleImageUpload = (event) => {
+    //   const file = event.target.files[0];
+    //   if (file) {
+    //     const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
+    
+       
+    //     const response = await axios.post(`${url}/Image/upload` , imageUrl );  
+
+    //     console.log(response)  
+
+
+
+           
+    //     if(response.data){
+
+    //       CallAPIUpdateImgObjectById(response.data)  
+    //       toast.success('Thêm đối tượng thành công')  
+    //       navigate('/Objects')    
+                               
+    //     }
+    //     else{
+    //       toast.error('Thêm thiết bị không thành công')
+    //     }
+        
+    //     setImage(imageUrl);
+
+    //     setObject((prevDevice) => ({
+    //       ...prevDevice, // Giữ lại các thuộc tính cũ
+    //       imagePath: imageUrl 
+    //     }))  
+    //     setchoseImage(pre=>!pre)
+    //   }
+    // };
+
+
+    // const handleImageUpload = async (event) => { // Thêm async ở đây
+    //   const file = event.target.files[0];
+    //   if (file) {
+    //     const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
+    //     try {
+    //       const response = await axios.post(`${url}/Image/upload`, imageUrl);  
+    
+    //       console.log('URL IMAGE', response);  
+    
+    //       if (response.data) {
+    //         setObject((prevDevice) => ({
+    //           ...prevDevice, // Giữ lại các thuộc tính cũ
+    //           imagePath: response.data
+    //         })); 
+    //         setImage(response.data);
+    //         setchoseImage(pre => !pre);
+    //       } else {
+    //         toast.error('Lỗi');
+    //       }
+        
+    //     } catch (error) {
+    //       console.error("Lỗi khi tải ảnh lên:", error);
+    //       toast.error("Có lỗi xảy ra khi tải ảnh lên");
+    //     }
+    //   }
+    // };
+
+
+
+    const handleImageUpload = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+  
+      const reader = new FileReader();
+          reader.onload = (e) => {
+            setImage(e.target.result);
+          };
+          reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+          const response = await axios.post("https://mygps.runasp.net/Image/upload", formData, {
+              headers: { "Content-Type": "multipart/form-data" }
+          });
+          console.log(response)
+          setImageURL(response.data.url)
+      } catch (error) {
+          console.error("Lỗi upload:", error);
+          alert("Lỗi upload!");
+      } finally {                        
+          
       }
     };
 
+    const CallAPIDeleteDevice = async () => {      
+      let success = false;  
+      while (!success) {
+        try {
+          const response = await axios.delete(`${url}/GPSObject/DeleteObjectById?objectId=${Object.id}`);     
+          const LoggerData = response.data;
+    
+          // Kiểm tra nếu dữ liệu nhận được hợp lệ
+          if (LoggerData) {
+            
+    
+            success = true; // Dừng vòng lặp khi dữ liệu hợp lệ và được xử lý
+            toast.success('Xóa đối tượng thành công')
+            navigate('/Objects')      
+          } else {   
+            toast.error('Xóa thiết bị không thành công')
+            alert('ReLoad');
+          }
+        } catch (error) {
+          console.error('Get All Devices error, retrying...', error);  
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
+        }
+      }
+    };
+
+
+    const handleDeleteDevice=() => {
+      const ConfirmdeleteDevice = window.confirm("Bạn có chắc muốn xóa thiết bị này không?");
+      if (ConfirmdeleteDevice) {
+        CallAPIDeleteDevice()
+       
+      } else {
+        console.log("Action canceled.");
+      }
+          
+    }
+    
 
 
 return (
@@ -691,7 +820,23 @@ return (
                                 </div>                                      
                           </div>
 
-                        </div>  
+                        </div>
+
+                           <div className='informationObjectItemButton'
+                                                         
+                                                          onClick={handleDeleteDevice}
+                                                    
+                                                    >
+                                                           <div  className='butonDeleteObject' >
+                                                           Xóa đối tượng
+                                                           </div>
+                                                           
+                                                                
+                                                            
+                            </div>
+
+
+
 
                         {/* <div className='informationDeviceItem'>
                           <div className='informationDeviceItemFirst'>

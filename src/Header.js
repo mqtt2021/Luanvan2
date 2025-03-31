@@ -26,10 +26,10 @@ import { IoNotifications } from "react-icons/io5";
 import { url } from './services/UserService';
 
 function Header() {
-  const { unreadCount, setUnreadCount  } =  useContext(UserContext); 
-  const [listNotifications, setListNotifications] = useState([]);
+  const { unreadCount, setUnreadCount, listNotifications, setListNotifications  } =  useContext(UserContext); 
+  // const [listNotifications, setListNotifications] = useState([]);
   const [phone, setPhone] = useState('');
-  const [listAllDeices, setListAllDeices] = useState([]); 
+  const [listAllDeices, setListAllDeices] = useState([]);   
   const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });
 
   const location = useLocation();
@@ -266,58 +266,79 @@ function Header() {
         
         useEffect(() => {   
           if(phone !== ''){
-            getNotification(); 
+             getNotification(); 
           }                     
         }, [phone])
          
-        useEffect( () => {
-          let connection = new signalR.HubConnectionBuilder()   
-              .withUrl("https://mygps.runasp.net/NotificationHub")   
-              .withAutomaticReconnect()    
-              .build();     
-          // Bắt đầu kết nối   
-          connection.start()   
-              .then(() => {  
-                  console.log("✅ Kết nối SignalR thành công!");
-      
-                           // Lắng nghe các sự kiện cho từng thiết bị
-                  listAllDeices.forEach(device => {
-                    connection.on(`SendNotification${device.id}`, data => {
-                      const obj = JSON.parse(data);
-                      console.log(`📡 Dữ liệu từ thiết bị ${device.id}:`, obj);
-                       // Đợi 2 giây trước khi gọi getNotification
-                      setTimeout(() => {
-                        getNotification();
-                      }, 4000);
+         useEffect(() => {
+            let connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://mygps.runasp.net/NotificationHub")
+                .withAutomaticReconnect()
+                .build();
+        
+            let notificationBuffer = 0; // Mảng tạm chứa thông báo
+            let bufferTimeout = null; // Timeout để kiểm soát thời gian cập nhật
+        
+            connection.start()
+                .then(() => {
+                    console.log("✅ Kết nối SignalR thành công!");
+        
+                    listAllDeices.forEach(device => {
+                        connection.on(`SendNotification${device.id}`, data => {
+                            const obj = JSON.parse(data);
+                            //console.log(`📡 Dữ liệu từ thiết bị ${device.id}:`, obj);
+        
+                           
+                            notificationBuffer = notificationBuffer + 1;
+                            // Nếu buffer đủ 2 thông báo, cập nhật luôn
+                            if (notificationBuffer.lengt === 2) {
+                                flushNotifications();
+                            } else {
+                                // Nếu chưa đủ 2, đợi 500ms rồi cập nhật
+                                if (!bufferTimeout) {
+                                    bufferTimeout = setTimeout(flushNotifications, 500);
+                                }
+                            }
+                        });
                     });
-                  }); 
-              })
-              .catch(err => {
-                  console.error('Kết nối thất bại: ', err);
+                })
+                .catch(err => {
+                    console.error('Kết nối thất bại: ', err);
+                });
+        
+                function flushNotifications() {
+                  if (notificationBuffer.length === 0) return;
+              
+                 
+              // Cập nhật state bằng callback để đảm bảo lấy đúng state trước đó
+              setUnreadCount(prev => {
+                      const updatedNotifications = prev + notificationBuffer // Gộp buffer và state cũ
+                      notificationBuffer = 0; // Reset buffer sau khi cập nhật
+                      return updatedNotifications;
               });
-          // Lắng nghe sự kiện kết nối lại
-          connection.onreconnected(connectionId => {
-              console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
-          });
-          // Lắng nghe sự kiện đang kết nối lại
-          connection.onreconnecting(error => {
-              console.warn('Kết nối đang được thử lại...', error);
-          });
-      
-          // connection.on("SendNotificationG002", data => {   
-          //       const obj = JSON.parse(data);
-          //       //console.log(obj)  
-          //       // getLogger()                 
-          // }); 
-      
-          // Cleanup khi component unmount hoặc khi listAllDeices thay đổi
-          return () => {
-            connection.stop();
-            console.log("🔴 Kết nối SignalR đã đóng!");
-          };
-      
-      
-        }, [listAllDeices] )
+                  // Cập nhật state bằng callback để đảm bảo lấy đúng state trước đó
+                  
+              
+                  clearTimeout(bufferTimeout);
+                  bufferTimeout = null;
+              }
+              
+        
+            // Xử lý khi kết nối lại
+            connection.onreconnected(connectionId => {
+                console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
+            });
+        
+            connection.onreconnecting(error => {
+                console.warn('Kết nối đang được thử lại...', error);
+            });
+        
+            // Cleanup khi component unmount hoặc listAllDeices thay đổi
+            return () => {
+                connection.stop();
+                console.log("🔴 Kết nối SignalR đã đóng!");
+            };
+        }, [listAllDeices]);
 
   //console.log('userHeader', user)
   return (    

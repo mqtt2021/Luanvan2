@@ -38,10 +38,11 @@ function PositionDevice() {
     const [selectedLogger, setSelecteLogger] = useState({});
 
     const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });
+    const [DeviceMaker, setDeviceMaker] = useState({id:'', latitude: 0 , longitude: 0 });
     const [IDDevice, setIDDevice] = useState('');  
 
     const [listPositionWantToDisplay, setListPositionWantToDisplay] = useState([]);
-    const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(9)
+    const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(15)
     const [center, setCenter] = useState({lat: 10.780064402624358,lng: 106.64558796192786 }) // center
     const [begin, setBegin ] = useState({}) 
     const [end, setEnd ] = useState({})   
@@ -60,7 +61,8 @@ function PositionDevice() {
           // Kiểm tra nếu dữ liệu nhận được hợp lệ
           if (DeviceData) {    
             // const ListStolen = LoggerData.filter((item) => item.stolenLines.length > 0);
-            setDevice(DeviceData);     
+            setDevice(DeviceData);        
+            setDeviceMaker(DeviceData)
             success = true; // Dừng vòng lặp khi dữ liệu hợp lệ và được xử lý
           } else {
             alert('ReLoad');
@@ -76,6 +78,12 @@ function PositionDevice() {
       setCenter({lat: Device.latitude,lng: Device.longitude })
       getAddressFromCoordinates(Device.latitude,  Device.longitude );   
     }, [Device])
+
+
+    useEffect(() => { 
+      setCenter({lat: DeviceMaker.latitude,lng: DeviceMaker.longitude })
+      getAddressFromCoordinates(DeviceMaker.latitude,  DeviceMaker.longitude );   
+    }, [DeviceMaker])
 
 
     useEffect(() => { 
@@ -188,37 +196,68 @@ function PositionDevice() {
       console.log('lng: '+ e.latlng.lng)
     };
 
+    function extractCoordinates(message) {
+      const match = message.match(/Longitude:\s*([\d.-]+);\s*Latitude:\s*([\d.-]+)/);
+      if (match) {
+
+        setDeviceMaker(pre => ({
+          ...pre, // Giữ nguyên các giá trị cũ
+          latitude: parseFloat(match[2]), 
+          longitude: parseFloat(match[1])
+        }));  
+
+        setCenter({lat: parseFloat(match[2]),lng: parseFloat(match[1]) })
+        setZOOM_LEVEL(15)
+      }
+    }
+
     useEffect( () => {
+
       let connection = new signalR.HubConnectionBuilder()   
-          .withUrl("https://mygps.runasp.net/NotificationHub")   
-          .withAutomaticReconnect()    
-          .build();     
-      // Bắt đầu kết nối   
-      connection.start()   
-          .then(() => {  
-            console.log("✅ Kết nối SignalR thành công!");     
-                       // Lắng nghe các sự kiện cho từng thiết bị
-          })
-          .catch(err => {
-              console.error('Kết nối thất bại: ', err);
+      .withUrl("https://mygps.runasp.net/NotificationHub")   
+      .withAutomaticReconnect()    
+      .build(); 
+
+     
+            
+          // Bắt đầu kết nối   
+          connection.start()   
+              .then(() => {  
+                console.log("✅ Kết nối SignalR Position Device thành công!");     
+                           // Lắng nghe các sự kiện cho từng thiết bị
+              })
+              .catch(err => {
+                  console.error('Kết nối thất bại: ', err);
+              });
+          // Lắng nghe sự kiện kết nối lại
+          connection.onreconnected(connectionId => {
+              console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
           });
-      // Lắng nghe sự kiện kết nối lại
-      connection.onreconnected(connectionId => {
-          console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
-      });
-      // Lắng nghe sự kiện đang kết nối lại
-      connection.onreconnecting(error => {
-          console.warn('Kết nối đang được thử lại...', error);
-      });
+          // Lắng nghe sự kiện đang kết nối lại
+          connection.onreconnecting(error => {
+              console.warn('Kết nối đang được thử lại...', error);
+          });
+    
+      
+
       connection.on(`SendNotification${Device.id}`, data => {
         const obj = JSON.parse(data);
         console.log(`📡 Dữ liệu từ thiết bị ${Device.id}:`, obj);
          // Đợi 2 giây trước khi gọi getNotification
-        setTimeout(() => {
-          getDeviceById();  
-        }, 5000);                   
-      });               
-    }, [] )
+
+         extractCoordinates(obj.Description)          
+      });
+      
+      // Cleanup khi component unmount hoặc khi Device thay đổi
+    return () => {
+      console.log("🔴 Ngắt kết nối SignalR...");
+      connection.stop();
+    };
+
+    }, [Device] )
+
+
+   
 
    
 
@@ -280,7 +319,7 @@ function PositionDevice() {
                                
                                   <Marker 
                                       className='maker'
-                                      position={[Device.latitude, Device.longitude]}   
+                                      position={[DeviceMaker.latitude, DeviceMaker.longitude]}   
                                       icon= { positionDevice }     
                                       zIndexOffset={ 1000 } 
                                                                   

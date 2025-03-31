@@ -18,8 +18,8 @@ import { useParams } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 
 
-function Setting() {  
-   
+function Setting() {    
+   const [imageURL, setImageURL] = useState('');
     const inputRef = useRef(null); // Tạo ref để tham chiếu đến input
     const navigate = useNavigate();
     const {id} = useParams(); // Lấy tham số động từ URL
@@ -46,6 +46,16 @@ function Setting() {
         CallAPIUpdateImgDeviceById()
       }
     },[choseImage])
+
+    useEffect(()=>{
+      if(Device.id !== ''){
+        setDevice((prevDevice) => ({
+                  ...prevDevice, // Giữ lại các thuộc tính cũ
+                  imagePath: imageURL 
+        }))  
+        setchoseImage(pre=>!pre)
+      }
+    },[imageURL])
 
 
     const CallAPIUpdateImgDeviceById = async () => {      
@@ -74,17 +84,49 @@ function Setting() {
 
     };
 
-    const handleImageUpload = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
-        setImage(imageUrl);
+    // const handleImageUpload = (event) => {
+    //   const file = event.target.files[0];
+    //   if (file) {
+    //     const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
+    //     setImage(imageUrl);
 
-        setDevice((prevDevice) => ({
-          ...prevDevice, // Giữ lại các thuộc tính cũ
-          imagePath: imageUrl 
-        }))  
-        setchoseImage(pre=>!pre)
+    //     setDevice((prevDevice) => ({
+    //       ...prevDevice, // Giữ lại các thuộc tính cũ
+    //       imagePath: imageUrl 
+    //     }))  
+    //     setchoseImage(pre=>!pre)
+    //   }
+    // };
+
+    const handleImageUpload = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+  
+      const reader = new FileReader();
+          reader.onload = (e) => {
+            setImage(e.target.result);
+          };
+          reader.readAsDataURL(file);
+  
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      
+      try {
+          const response = await axios.post("https://mygps.runasp.net/Image/upload", formData, {
+              headers: { "Content-Type": "multipart/form-data" }
+          });
+  
+          console.log(response)
+          setImageURL(response.data.url)
+  
+        
+          
+      } catch (error) {
+          console.error("Lỗi upload:", error);
+          alert("Lỗi upload!");
+      } finally {
+          
       }
     };
 

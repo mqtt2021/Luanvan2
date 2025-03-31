@@ -27,10 +27,13 @@ import { AiFillWarning } from "react-icons/ai";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import moment from "moment";
 import { SlCheck } from "react-icons/sl";
+import { FaBell } from "react-icons/fa";
+import * as signalR from "@microsoft/signalr";   
 function Detail() {  
    const [image, setImage] = useState(null);
     const [isPressed, setIsPressed] = useState(false);
     const [isOn, setIsOn] = useState(false);   
+    const [isOnBuzzer, setIsOnBuzzer] = useState(false);   
     const [isEmergency, setIsEmergency] = useState(false);
     const location = useLocation();     
     const [time, setTime] = useState("00:00:00"); // Giá trị mặc định
@@ -90,15 +93,30 @@ function Detail() {
       
     }, [idDevice]) 
 
-    useEffect(() => {  
-      if(Device.id !== ''){
-        setImage(Device.imagePath) 
+    const scanBluetoothDevices = async () => {
+      try {
+          const device = await navigator.bluetooth.requestDevice({
+              acceptAllDevices: true,
+              optionalServices: ['battery_service']
+          });
+    
+          console.log(device)
+    
+          // if (device) {
+          //     setDevices(prevDevices => [...prevDevices, device.name || 'Không có tên']);
+          // }
+      } catch (error) {
+          console.error('Lỗi khi quét thiết bị Bluetooth:', error);
       }
-      
-    }, [Device]) 
+    };
 
     useEffect(() => {  
       if(Device.id !== ''){
+
+        
+
+        setImage(Device.imagePath) 
+
         setTime(extractTime(Device.alarmTime))  
         if(Device.emergency){
           setIsEmergency(true)
@@ -108,8 +126,10 @@ function Detail() {
         }
 
 
-        if(Device.bluetooth === "True"){
+        if(Device.bluetooth === "ON"){
+          toast.success("BlueTooth đã được bật thành công")
           setIsOn(true)
+          scanBluetoothDevices()      
         }
         else{
           setIsOn(false)  
@@ -132,6 +152,19 @@ function Detail() {
           // Kiểm tra nếu dữ liệu nhận được hợp lệ
           if (DevicesData && DevicesData.length > 0) {      
             const Devices = DevicesData.find((item) => item.connected === true && item.gpsDeviceId === idDevice);
+
+            if (Devices) {
+              console.log("Tìm thấy thiết bị:", Devices);
+            } else {
+              const ConfirmdeleteDevice = window.confirm("Chú ý, bạn chưa tạo đối tượng kết nối với thiết bị theo dõi!!!");
+              if (ConfirmdeleteDevice) {
+               
+               
+              } else {
+                console.log("Action canceled.");
+              }
+            }
+
             setObjectIsConnect(Devices);         
             success = true; 
           } else {
@@ -146,7 +179,8 @@ function Detail() {
 
     useEffect(() => {  
       if(phone !== ''){
-        getAllObject()   
+          getAllObject()   
+
       }
          
     }, [phone])   
@@ -160,7 +194,7 @@ function Detail() {
 
     
     useEffect(() => {  
-        const deviceId = getDeviceIdFromURL();
+        const deviceId = getDeviceIdFromURL();              
         setIdDevice(deviceId)
 
         const phoneNumer = sessionStorage.getItem('phoneNumer');  
@@ -230,22 +264,9 @@ function Detail() {
 
 
     
-const scanBluetoothDevices = async () => {
-  try {
-      const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['battery_service']
-      });
+   
 
-      console.log(device)
 
-      // if (device) {
-      //     setDevices(prevDevices => [...prevDevices, device.name || 'Không có tên']);
-      // }
-  } catch (error) {
-      console.error('Lỗi khi quét thiết bị Bluetooth:', error);
-  }
-};
 
 const handleScanAndShow = async () => {
   setIsVisible(true);
@@ -265,6 +286,42 @@ const handleScanAndShow = async () => {
               "CurrentTime": "0001-01-01T00:00:00",   
               "AlarmTime": `0001-01-01T${time}`,
               "BlueTooth": bluetoothStatus,  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Emergency": isEmergency,  
+              "PhoneNumber": phoneNumer
+            }
+          );
+
+          const ObjectData = response.data;
+          if (ObjectData === 'Update successfully!') { 
+            //toast.success(`Đã gửi yêu cầu bật Bluetooth  ${bluetoothStatus === "ON" ? "bật" : "tắt"} thành công`);
+            toast.success(`Đã gửi yêu cầu bật Bluetooth`);
+            success = true;              
+          } else {                
+            toast.error("Xác lập không thành công");
+          }
+        } catch (error) {
+          console.error("Get All Logger error, retrying...", error);
+          await new Promise(resolve => setTimeout(resolve, 1000)); 
+        }
+      }
+    };
+
+
+    const callAPIUpdateObjectBuzzerById = async (BuzzerStatus) => {
+      const phoneNumer = sessionStorage.getItem('phoneNumer');
+      let success = false;
+      while (!success) {   
+        try {
+          const response = await axios.patch(`${url}/GPSObject/UpdateObjectInformation?ObjectId=${ObjectIsConnect.id}`, 
+            {
+              "Longitude": ObjectIsConnect.longitude,
+              "Latitude": ObjectIsConnect.latitude,
+              "SafeRadius": ObjectIsConnect.safeRadius,
+              "CurrentTime": "0001-01-01T00:00:00",   
+              "AlarmTime": `0001-01-01T${time}`,  
+              "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Buzzer": BuzzerStatus,  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Emergency": isEmergency,
               "PhoneNumber": phoneNumer
             }
@@ -272,11 +329,12 @@ const handleScanAndShow = async () => {
 
           const ObjectData = response.data;
           if (ObjectData === 'Update successfully!') { 
-            toast.success(`Bluetooth đã được ${bluetoothStatus === "ON" ? "bật" : "tắt"} thành công`);
+            toast.success(`Còi đã được ${BuzzerStatus === "ON" ? "bật" : "tắt"} thành công`);
             success = true;
           } else {  
             toast.error("Xác lập không thành công");
           }
+
         } catch (error) {
           console.error("Get All Logger error, retrying...", error);
           await new Promise(resolve => setTimeout(resolve, 1000)); 
@@ -299,9 +357,10 @@ const handleScanAndShow = async () => {
               "Longitude": ObjectIsConnect.longitude,
               "Latitude": ObjectIsConnect.latitude,
               "SafeRadius": ObjectIsConnect.safeRadius,
-              "CurrentTime": "0001-01-01T00:00:00",   
+              "CurrentTime": "0001-01-01T00:00:00",     
               "AlarmTime": `0001-01-01T${time}`,
               "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Emergency": StatusEmergency,
               "PhoneNumber": phoneNumer
             }
@@ -324,8 +383,6 @@ const handleScanAndShow = async () => {
 
 
     const callAPIUpdateObjecAlarmTimetById = async (timeObject) => {
-
-     
       let success = false;
       while (!success) {   
         try {
@@ -334,9 +391,10 @@ const handleScanAndShow = async () => {
               "Longitude": ObjectIsConnect.longitude,
               "Latitude": ObjectIsConnect.latitude,
               "SafeRadius": ObjectIsConnect.safeRadius,
-              "CurrentTime": "0001-01-01T00:00:00",   
+              "CurrentTime": "0001-01-01T00:00:00",      
               "AlarmTime": `0001-01-01T${timeObject}`,
               "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Emergency": isEmergency,    
               "PhoneNumber": "0888927971"
             }
@@ -423,15 +481,29 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-const extractTime = (dateTimeString) => {
-  return dateTimeString.split("T")[1]; // Lấy phần sau "T"
-};
+    const extractTime = (dateTimeString) => {
+      return dateTimeString.split("T")[1]; // Lấy phần sau "T"
+    };
 
     const toggleSwitch = () => {
+      
       const newStatus = !isOn;
       setIsOn(newStatus);
-      callAPIUpdateObjectById(newStatus ? "ON" : "OFF");
-      scanBluetoothDevices()             
+      callAPIUpdateObjectById(newStatus ? "ON" : "OFF");  
+      
+      
+      // if(newStatus)  {
+      //    scanBluetoothDevices()      
+      // }
+
+               
+    };
+
+    const toggleSwitchBuzzer = () => {
+      const newStatus = !isOnBuzzer;
+      setIsOnBuzzer(newStatus);                         
+      callAPIUpdateObjectBuzzerById(newStatus ? "ON" : "OFF");
+               
     };
 
     const toggleSwitchWarning = () => {
@@ -478,6 +550,53 @@ const extractTime = (dateTimeString) => {
         setMessage(`Lỗi: ${error.message}`);
       }
     };
+
+
+
+    useEffect( () => {
+    
+          let connection = new signalR.HubConnectionBuilder()   
+          .withUrl("https://mygps.runasp.net/NotificationHub")   
+          .withAutomaticReconnect()    
+          .build(); 
+    
+         
+                
+              // Bắt đầu kết nối   
+              connection.start()   
+                  .then(() => {  
+                    console.log("✅ Kết nối SignalR Position Device thành công!");     
+                               // Lắng nghe các sự kiện cho từng thiết bị
+                  })
+                  .catch(err => {
+                      console.error('Kết nối thất bại: ', err);
+                  });
+              // Lắng nghe sự kiện kết nối lại
+              connection.onreconnected(connectionId => {
+                  console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
+              });
+              // Lắng nghe sự kiện đang kết nối lại
+              connection.onreconnecting(error => {
+                  console.warn('Kết nối đang được thử lại...', error);
+              });
+
+
+          connection.on(`SendNotification${Device.id}`, data => {
+            const obj = JSON.parse(data);
+            console.log(`📡 Dữ liệu từ thiết bị ${Device.id}:`, obj);
+             // Đợi 2 giây trước khi gọi getNotification
+             setTimeout(() => {
+              getDeviceById()
+          }, 3000);
+          });
+          
+          // Cleanup khi component unmount hoặc khi Device thay đổi
+        return () => {
+          console.log("🔴 Ngắt kết nối SignalR...");
+          connection.stop();
+        };
+    
+        }, [Device] )
 
 
 
@@ -610,30 +729,12 @@ return (
                           </div> 
                             
                           <div className='informationDeviceItemSecond'>
-                                <div className='informationDeviceItemSecondText'>
-                                        {ObjectIsConnect?.name || "Chưa có"}
+                                <div className='informationDeviceItemSecondText'>   
+                                        {ObjectIsConnect?.name || "Chưa có"}   
                                 </div>                                      
                           </div>
 
                         </div>  
-
-                        {/* <div className='informationDeviceItem'>
-                          <div className='informationDeviceItemFirst'>
-                              <div className='informationDeviceItemFirstIcon'>
-                                  <GrConnect className='informationDeviceItemIcon'/>  
-                              </div>          
-                              <div className='informationDeviceItemFirstTitle'>FirmWare:</div>
-                          </div>    
-                            
-                          <div className='informationDeviceItemSecond'>
-                                <div className='informationDeviceItemSecondText'>
-                                    
-                                    <input type="file" accept=".bin" onChange={handleFileChange} />
-                                    <button onClick={handleUpload}>Upload</button>
-                                    {message && <p>{message}</p>}
-                                </div>                                
-                          </div>  
-                        </div> */}
 
                         <div className='informationDeviceItem'>
                           <div className='informationDeviceItemFirst'>
@@ -655,6 +756,30 @@ return (
                                 ></div>
                             </div>
                             <span className={`text-sm font-semibold ${isOn ? 'text-green-500' : 'text-red-500'}`}>{isOn ? "ON" : "OFF"}</span>
+                          </div>
+                          </div>
+                        </div>
+
+                        <div className='informationDeviceItem'>
+                          <div className='informationDeviceItemFirst'>
+                            <div className='informationDeviceItemFirstIcon'>
+                              <FaBell className='informationDeviceItemIcon'/>  
+                            </div>       
+                            <div className='informationDeviceItemFirstTitle'>Còi:</div>
+                          </div> 
+
+                          <div className="informationDeviceItemSecond">
+
+                          <div className="flex items-center gap-3">
+                            <div                  
+                                className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition-all ${isOnBuzzer ? 'bg-green-500' : 'bg-red-500'}`} 
+                                onClick={toggleSwitchBuzzer}                              
+                            >
+                                <div 
+                                    className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${isOnBuzzer ? 'translate-x-7' : ''}`}
+                                ></div>
+                            </div>
+                            <span className={`text-sm font-semibold ${isOnBuzzer ? 'text-green-500' : 'text-red-500'}`}>{isOnBuzzer ? "ON" : "OFF"}</span>
                           </div>
                           </div>
                         </div>

@@ -59,127 +59,73 @@
             }
         }
 
-    .wrapperContainerNotification{   
-        
+    a{
         width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+
+        color: inherit; /* Kế thừa màu từ phần tử cha */
+        text-decoration: none; /* Loại bỏ gạch chân */
+
+        .wrapperContainerNotification{   
         
-        .containerDevice{
-            width: 100%;    
-            background-color: #fff;
+            width: 100%;
             display: flex;
-            height: 100px;
-            justify-content: space-between; 
-            border-bottom: 0.4px solid rgb(163, 161, 161);
-            &:hover{     
-                cursor: pointer;
-                background-color: #c6c6c6;
-
-            }
-            .itemDevice{
+            flex-direction: column;
+            align-items: center;
+            
+            .containerDevice{
+                width: 100%;    
+                background-color: #fff;
                 display: flex;
-                height: 100%;
-            }
-            .itemDeviceFirst{
-                    width: 50%;
-                    .divIconDevice{
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 30%;
-                        .iconDevice{
-                            font-size: 50px;
-                            color: rgb(252, 0, 0);
-                        }
-                    }
-                    .divIconNameAndPin{
-                        width: 70%;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-evenly;
-                        .name{
-                            font-size: 20px;
-                            font-weight: 700;    
-                            font-family: inherit;         
-                        }
-                        .divIconPin{
-                            display: flex;
-                            align-items: center;
-                            font-style: italic;
-                            font-weight: 400;
-                            color: #767676;
-                            font-size: 15px;
-                             .iconPin{
-                                font-size: 40px;
-                                color: rgb(9, 144, 255);
-                            }  
-                        }
-                       
-                    }
-            }
-
-            .itemNotificationecond{
-                width: 50%;
-                justify-content: space-around;
-                align-items: center;
-               
-                    .itemNotificationecondItem{  
-                    font-weight: 500;
-                    font-size: 20px;    
-                    .iconAcknownledge{
-                        color: rgb(0, 145, 255);
-                    }  
-                   
-                    }
-                
-                
-            }
-
-
-            @media (max-width: 768px) {
-
-
-                .itemDeviceFirst{
-                    width: 50%;
-                    
-                    .divIconDevice{
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 25%;
-                        .iconDevice{
-                            font-size: 35px;
-                            color: rgb(252, 0, 0);
-                        }
-                    }
-                    .divIconNameAndPin{
-                        width: 75%;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-evenly;
-                        .name{
-                            font-size: 15px;
-                            font-weight: 700;    
-                            font-family: inherit;         
-                        }
-                        .divIconPin{
-                            display: flex;
-                            align-items: center;
-                            font-style: italic;
-                            font-weight: 400;
-                            color: #767676;
-                            font-size: 12px;
-                             .iconPin{
-                                font-size: 40px;
-                                color: rgb(9, 144, 255);
-                            }  
-                        }
-                       
-                    }
+                height: 100px;
+                justify-content: space-between; 
+                border-bottom: 0.4px solid rgb(163, 161, 161);
+                &:hover{     
+                    cursor: pointer;
+                    background-color: #c6c6c6;
+    
                 }
-
+                .itemDevice{
+                    display: flex;
+                    height: 100%;
+                }
+                .itemDeviceFirst{
+                        width: 50%;
+                        .divIconDevice{
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 30%;
+                            .iconDevice{
+                                font-size: 50px;
+                                color: rgb(252, 0, 0);
+                            }
+                        }
+                        .divIconNameAndPin{
+                            width: 70%;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-evenly;
+                            .name{
+                                font-size: 20px;
+                                font-weight: 700;    
+                                font-family: inherit;         
+                            }
+                            .divIconPin{
+                                display: flex;
+                                align-items: center;
+                                font-style: italic;
+                                font-weight: 400;
+                                color: #767676;
+                                font-size: 15px;
+                                 .iconPin{
+                                    font-size: 40px;
+                                    color: rgb(9, 144, 255);
+                                }  
+                            }
+                           
+                        }
+                }
+    
                 .itemNotificationecond{
                     width: 50%;
                     justify-content: space-around;
@@ -187,7 +133,7 @@
                    
                         .itemNotificationecondItem{  
                         font-weight: 500;
-                        font-size: 13px;    
+                        font-size: 20px;    
                         .iconAcknownledge{
                             color: rgb(0, 145, 255);
                         }  
@@ -196,10 +142,73 @@
                     
                     
                 }
-
+    
+    
+                @media (max-width: 768px) {
+    
+    
+                    .itemDeviceFirst{
+                        width: 50%;
+                        
+                        .divIconDevice{
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 25%;
+                            .iconDevice{
+                                font-size: 35px;
+                                color: rgb(252, 0, 0);
+                            }
+                        }
+                        .divIconNameAndPin{
+                            width: 75%;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-evenly;
+                            .name{
+                                font-size: 15px;
+                                font-weight: 700;    
+                                font-family: inherit;         
+                            }
+                            .divIconPin{
+                                display: flex;
+                                align-items: center;
+                                font-style: italic;
+                                font-weight: 400;
+                                color: #767676;
+                                font-size: 12px;
+                                 .iconPin{
+                                    font-size: 40px;
+                                    color: rgb(9, 144, 255);
+                                }  
+                            }
+                           
+                        }
+                    }
+    
+                    .itemNotificationecond{
+                        width: 50%;
+                        justify-content: space-around;
+                        align-items: center;
+                       
+                            .itemNotificationecondItem{  
+                            font-weight: 500;
+                            font-size: 13px;    
+                            .iconAcknownledge{
+                                color: rgb(0, 145, 255);
+                            }  
+                           
+                            }
+                        
+                        
+                    }
+    
+                }
             }
         }
-    }
+    }    
+
+    
 
 
     @media (max-width: 768px) {

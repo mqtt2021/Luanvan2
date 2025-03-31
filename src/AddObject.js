@@ -15,10 +15,12 @@ import { MdPhotoCamera } from "react-icons/md";
 import axios from 'axios';
 import { url } from './services/UserService'
 import {  toast } from 'react-toastify';
-import { useNavigate, useLocation  } from 'react-router-dom';
+import { useNavigate, useLocation, Link  } from 'react-router-dom';
 import { MdOutlineStickyNote2 } from "react-icons/md";
-function AddObject() {    
-  
+import useGeoLocation from "./useGeoLocation"  
+                             
+function AddObject() {                                    
+    const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
     const navigate = useNavigate();
     const [nameObject, setnameObject] = useState('');
     const [descriptionObject, setdescriptionObject] = useState('');
@@ -28,7 +30,7 @@ function AddObject() {
     const [center, setCenter] = useState({ lat: 10.81993366729437,lng: 106.69843395240606  });
     const [zoomLevel, setZoomLevel] = useState(18);
     const [locationNewBin, setlocationNewBin] = useState({ lat: 0, lng: 0 })
-
+    const [imageURL, setImageURL] = useState('');
     const mapRef = useRef() 
 
     const data = [
@@ -77,13 +79,37 @@ function AddObject() {
           const isDragging = useRef(false);
           const startPosition = useRef({ x: 0, y: 0 });
         
-          const handleImageUpload = (event) => {
+          const handleImageUpload = async (event) => {
             const file = event.target.files[0];
-            if (file) {
-              const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
-              setImage(imageUrl);
+            if (!file) return;
+        
+            const reader = new FileReader();
+                reader.onload = (e) => {
+                  setImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+        
+            const formData = new FormData();
+            formData.append("file", file);
+        
+            
+            try {
+                const response = await axios.post("https://mygps.runasp.net/Image/upload", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+        
+                console.log(response)
+                setImageURL(response.data.url)
+        
+               
+                
+            } catch (error) {
+                console.error("Lỗi upload:", error);
+                alert("Lỗi upload!");
+            } finally {
+                
             }
-          };
+        };
 
 
         
@@ -113,11 +139,11 @@ function AddObject() {
                 
                   customerPhoneNumber: phoneNumer,
                   name: nameObject,
-                  longitude: 0,
-                  latitude: 0,
+                  longitude: locationUser.coordinates.longtitude,
+                  latitude:  locationUser.coordinates.latitude,
                   description: descriptionObject,  
-                  imagePath: image,
-                  safeRadius: 0,
+                  imagePath: imageURL,
+                  safeRadius: 10,
                   size: "string"
               });
               console.log(response)  
@@ -134,12 +160,13 @@ function AddObject() {
             } catch (error) {
               toast.error('Đăng kí không thành công')
             }
-        
-        
           };
 
           const handleAddObject = () => {
-                
+                 if(nameObject === '' || descriptionObject === '' || image === null){  
+                          toast.error('Bạn chưa nhập đủ thông tin')  
+                          return  
+                        }
                 APIPostObject()
           }
 
@@ -232,6 +259,34 @@ function AddObject() {
                           </div>
 
                         </div>
+
+
+                        {/* <div className='wrapAddObjectItem wrapAddObjectItemArea'>
+                          <div className='wrapAddObjectItemFirst'>  
+                              <div className='divIconAddObject'>
+                                  <PiMapPinSimpleAreaBold className='IconAddObject'/> 
+                              </div>  
+                              <div className='titleAddObject'>Chọn vùng an toàn:</div>
+                          </div> 
+                          
+                          <div className='wrapAddObjectItemSecond'> 
+                                    <div 
+                                          className='divButtonSafeArea'
+                                        
+                                    >  
+                               
+                                      <Link to={`/SafeAreaAddObjet`}>   
+                                                                                                                                                                                      
+                                              Chọn
+                                                                                                                  
+                                                                                                                  
+                                      </Link>  
+                                    </div>                                                              
+                          </div>
+
+                        </div> */}
+
+
                         {/* <div className='wrapAddObjectItem'>
                           <div className='wrapAddObjectItemFirst'>
                               <div className='divIconAddObject'>

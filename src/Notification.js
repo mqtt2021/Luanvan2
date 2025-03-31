@@ -22,23 +22,27 @@ import { UserContext } from './usercontext';
 import { GrUpdate } from "react-icons/gr";
 import * as signalR from "@microsoft/signalr";
 import { MdError } from "react-icons/md";
+
 function Notification() { 
 
 
-const { unreadCount, setUnreadCount  } =  useContext(UserContext);    
+  const { unreadCount, setUnreadCount, listNotifications, setListNotifications  } =  useContext(UserContext);    
 
   const [connection, setConnection] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Thêm state để quản lý trạng thái loading
-  const [listNotifications, setListNotifications] = useState([]);
+  
   const [phone, setPhone] = useState('');
   const [showModalAddDevice, setshowModalAddDevice] = useState(false);
 
   const [listAllDeices, setListAllDeices] = useState([]);   
 
-  const handleshowModalAddDevice = ()=> {   
+  const [notificationSignalR, setnotificationSignalR] = useState([]);
+                                       
+
+  const handleshowModalAddDevice = () => {   
         setshowModalAddDevice(true)       
   }
-  const handleCloseModalAddDeice = ()=>{
+  const handleCloseModalAddDeice = () => {
         setshowModalAddDevice(false)     
   } 
 
@@ -157,6 +161,17 @@ const { unreadCount, setUnreadCount  } =  useContext(UserContext);
     const phoneNumer = sessionStorage.getItem('phoneNumer');    
     setPhone(phoneNumer)    
   }, [])
+
+  useEffect(() => {    
+    if (notificationSignalR.length > 0) {
+        //console.log('🟢 useEffect nhận notificationSignalR:', notificationSignalR);
+        setListNotifications(prev => [...notificationSignalR, ...prev]);
+
+        // Reset lại `notificationSignalR` sau khi đã xử lý
+        //setnotificationSignalR([]);
+    }                
+}, [notificationSignalR]);
+                                                                              
   
   useEffect(() => { 
     if(phone !== ''){
@@ -192,46 +207,127 @@ const { unreadCount, setUnreadCount  } =  useContext(UserContext);
   }
 
 
-  useEffect( () => {
-    let connection = new signalR.HubConnectionBuilder()   
-        .withUrl("https://mygps.runasp.net/NotificationHub")   
-        .withAutomaticReconnect()    
-        .build();     
-    // Bắt đầu kết nối   
-    connection.start()   
-        .then(() => {  
-          console.log("✅ Kết nối SignalR thành công!");
-                     // Lắng nghe các sự kiện cho từng thiết bị
-        listAllDeices.forEach(device => {
-          connection.on(`SendNotification${device.id}`, data => {
-            const obj = JSON.parse(data);
-            console.log(`📡 Dữ liệu từ thiết bị ${device.id}:`, obj);
-             // Đợi 2 giây trước khi gọi getNotification
-            setTimeout(() => {
-              getNotification();
-            }, 4000);
-          });
-        });
-         
-          
+  // useEffect( () => {
+  //   let connection = new signalR.HubConnectionBuilder()   
+  //       .withUrl("https://mygps.runasp.net/NotificationHub")   
+  //       .withAutomaticReconnect()    
+  //       .build();     
+  //   // Bắt đầu kết nối   
+  //   connection.start()   
+  //       .then(() => {  
+  //         console.log("✅ Kết nối SignalR thành công!");
+  //                    // Lắng nghe các sự kiện cho từng thiết bị
+  //       listAllDeices.forEach(device => {
+  //         connection.on(`SendNotification${device.id}`, data => {
+  //           const obj = JSON.parse(data);
+  //           console.log(`📡 Dữ liệu từ thiết bị ${device.id}:`, obj);
+  //            // Đợi 2 giây trước khi gọi getNotification
+  //            setnotificationSignalR({
+  //             title: obj.Title,
+  //             description: obj.Description,
+  //             timestamp: obj.Timestamp, 
+  //             isAcknowledge: obj.IsAcknowledge
+  //            })
+  //         });
+  //       });
+  //       })
+  //       .catch(err => {
+  //           console.error('Kết nối thất bại: ', err);
+  //       });
+  //   // Lắng nghe sự kiện kết nối lại
+  //   connection.onreconnected(connectionId => {
+  //       console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
+  //   });
+  //   // Lắng nghe sự kiện đang kết nối lại
+  //   connection.onreconnecting(error => {
+  //       console.warn('Kết nối đang được thử lại...', error);
+  //   });
+  //   // Cleanup khi component unmount hoặc khi listAllDeices thay đổi
+  //   return () => {
+  //     connection.stop();
+  //     console.log("🔴 Kết nối SignalR đã đóng!");
+  //   };
+  // }, [listAllDeices] )
+
+
+  useEffect(() => {
+    let connection = new signalR.HubConnectionBuilder()
+        .withUrl("https://mygps.runasp.net/NotificationHub")
+        .withAutomaticReconnect()
+        .build();
+
+    let notificationBuffer = []; // Mảng tạm chứa thông báo
+    let bufferTimeout = null; // Timeout để kiểm soát thời gian cập nhật
+
+    connection.start()
+        .then(() => {
+            console.log("✅ Kết nối SignalR thành công!");
+
+            listAllDeices.forEach(device => {
+                connection.on(`SendNotification${device.id}`, data => {
+                    const obj = JSON.parse(data);
+                    //console.log(`📡 Dữ liệu từ thiết bị ${device.id}:`, obj);
+
+                    // Lưu thông báo vào buffer
+                    notificationBuffer.push({
+                        title: obj.Title,
+                        description: obj.Description,
+                        timestamp: obj.Timestamp,
+                        isAcknowledge: obj.IsAcknowledge
+                    });
+
+                    // Nếu buffer đủ 2 thông báo, cập nhật luôn
+                    if (notificationBuffer.length >= 2) {
+                        flushNotifications();
+                    } else {
+                        // Nếu chưa đủ 2, đợi 500ms rồi cập nhật
+                        if (!bufferTimeout) {
+                            bufferTimeout = setTimeout(flushNotifications, 500);
+                        }
+                    }
+                });
+            });
         })
         .catch(err => {
             console.error('Kết nối thất bại: ', err);
         });
-    // Lắng nghe sự kiện kết nối lại
+
+        function flushNotifications() {
+          if (notificationBuffer.length === 0) return;
+      
+          //console.log('flushNotifications - Trước:', notificationSignalR);
+          //console.log('flushNotifications - notificationBuffer:', notificationBuffer);
+      
+          // Cập nhật state bằng callback để đảm bảo lấy đúng state trước đó
+          setnotificationSignalR(prev => {
+              const updatedNotifications = [...notificationBuffer, ...prev]; // Gộp buffer và state cũ
+              notificationBuffer = []; // Reset buffer sau khi cập nhật
+              return updatedNotifications;
+          });
+      
+          clearTimeout(bufferTimeout);
+          bufferTimeout = null;
+      }
+      
+
+    // Xử lý khi kết nối lại
     connection.onreconnected(connectionId => {
         console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
     });
-    // Lắng nghe sự kiện đang kết nối lại
+
     connection.onreconnecting(error => {
         console.warn('Kết nối đang được thử lại...', error);
     });
-    // Cleanup khi component unmount hoặc khi listAllDeices thay đổi
+
+    // Cleanup khi component unmount hoặc listAllDeices thay đổi
     return () => {
-      connection.stop();
-      console.log("🔴 Kết nối SignalR đã đóng!");
+        connection.stop();
+        console.log("🔴 Kết nối SignalR đã đóng!");
     };
-  }, [listAllDeices] )
+}, [listAllDeices]);
+
+
+
 
 
 
@@ -262,6 +358,12 @@ const { unreadCount, setUnreadCount  } =  useContext(UserContext);
   //   };
   // }, []);
 
+  function extractDeviceId(message) {
+    const match = message.match(/Thiết bị (\w+) (rời khỏi|chuyển động|cập nhật vị trí)/);
+    return match ? match[1] : null;
+}
+
+//console.log('Sau:', notificationSignalR);
 
   return (
     <div className='fatherNotification'>
@@ -281,12 +383,15 @@ const { unreadCount, setUnreadCount  } =  useContext(UserContext);
                     </div>
               ) :
               
-              (listNotifications.map((item , index) => (  
+          (listNotifications.map((item , index) => (  
+
+            <Link to={`/Devices/Position/${extractDeviceId(item.description)}`}>     
               <div
                   className='wrapperContainerNotification'
                   onClick={() => UpdateAcknowledge(item.title, item.description, item.timestamp, item.isAcknowledge)}
  
-              >        
+              >  
+             
                 <div className='containerDevice'>
                   <div className='itemDevice itemDeviceFirst'>
                       <div className='divIconDevice'>    
@@ -322,7 +427,9 @@ const { unreadCount, setUnreadCount  } =  useContext(UserContext);
                   </div>
 
                 </div>
-              </div>                              
+              </div>  
+            </Link>   
+
               ))  )}
       </div>   
               

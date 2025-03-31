@@ -227,6 +227,7 @@
             color: aliceblue;
             align-items: center;
             cursor: pointer; 
+            position: relative;  
             &:hover{
               background-color:rgb(166, 138, 230);
             }
@@ -237,6 +238,7 @@
               display: flex;
               align-items: center;
               column-gap: 10px;
+              
               .slideBarItemIconText{
                display: flex;
                align-items: center;
@@ -253,7 +255,8 @@
                 justify-content: center;             
                 align-items: center;
                 font-size: 15px;
-
+                position: absolute;
+                right: 7px;
               }
 
             }

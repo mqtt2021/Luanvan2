@@ -16,6 +16,7 @@ function Connect({ show , handleClose }) {
   const [loading, setLoading] = useState(false); // Thêm trạng thái loading    
   const [listAllDevices, setlistAllDevices] = useState([]) 
   const [isClickButtonConnect, setisClickButtonConnect] = useState(false) 
+  const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 }); 
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -102,9 +103,6 @@ function Connect({ show , handleClose }) {
               // toast.success('Kết nối với thiết bị thành công')
               // handleClose()   
               CallAPIGetObjectById()
-              
-
-              
       }
       else{
         toast.error('Kết nối thiết bị không thành công')
@@ -118,12 +116,83 @@ function Connect({ show , handleClose }) {
   };
 
 
+  const callAPIUpdateObjectById = async (bluetoothStatus) => {
+    const phoneNumer = sessionStorage.getItem('phoneNumer');
+    let success = false;
+    while (!success) {   
+      try {
+        const response = await axios.patch(`${url}/GPSObject/UpdateObjectInformation?ObjectId=${idObjectConnect}`, 
+          {
+            "Longitude": ObjectConnect.longitude,
+            "Latitude": ObjectConnect.latitude,
+            "SafeRadius": ObjectConnect.safeRadius,
+            "CurrentTime": "0001-01-01T00:00:00",   
+            "AlarmTime": Device.alarmTime,
+            "BlueTooth": "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+            "Buzzer": "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+            "Emergency": Device.emergency,    
+            "PhoneNumber": phoneNumer
+          }
+        );
 
-     const handleConnectObjectWithDevice = () => {
-            callAPIConnecDevice()
-            setisClickButtonConnect(true)
-
+        const ObjectData = response.data;
+        if (ObjectData === 'Update successfully!') { 
+          //toast.success(`Đã gửi yêu cầu bật Bluetooth  ${bluetoothStatus === "ON" ? "bật" : "tắt"} thành công`);
+         
+          success = true;              
+        } else {                
+          toast.error("Xác lập không thành công");
+        }
+      } catch (error) {
+        console.error("Get All Logger error, retrying...", error);
+        await new Promise(resolve => setTimeout(resolve, 1000)); 
       }
+    }
+  };           
+
+
+  const getDeviceById = async () => { 
+      
+    
+    let success = false;
+
+    while (!success) {   
+      try {
+        const response = await axios.get(`${url}/GPSDevice/GetGPSDeviceById?Id=${selectedDevice}`);         
+        const DeviceData = response.data;
+  
+        // Kiểm tra nếu dữ liệu nhận được hợp lệ
+        if (DeviceData) {    
+          // const ListStolen = LoggerData.filter((item) => item.stolenLines.length > 0);
+          setDevice(DeviceData); 
+          console.log(DeviceData)       
+          success = true; // Dừng vòng lặp khi dữ liệu hợp lệ và được xử lý
+        } else {
+          alert('ReLoad');
+        }
+      } catch (error) {
+        console.error('getDeviceById error, retrying...', error);  
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
+      }
+    }
+
+   
+  };
+
+
+  const handleConnectObjectWithDevice = async () => {
+    try {
+
+        await getDeviceById(); // Chờ API kết nối thiết bị chạy xong              
+        await callAPIConnecDevice(); // Chờ API kết nối thiết bị chạy xong              
+       
+
+        setisClickButtonConnect(true); // Chạy sau khi hai hàm trên hoàn thành
+    } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+    }
+  };
+
   
       const callAPIgetAllDevices = async () => {     
         let success = false;   
@@ -151,23 +220,49 @@ function Connect({ show , handleClose }) {
 
       
 
-      useEffect(() => {
+      // useEffect(() => {
         
-        if(isClickButtonConnect){                                
-          if(ObjectConnect.connected){
-              toast.success('Kết nối với thiết bị thành công')
-              setObjectConnect({id:''})
-              setisClickButtonConnect(false)
-              handleClose() 
-          }   
-          else{
-            toast.error('Thiết bị đã được kết nối trước đó')
-            setisClickButtonConnect(false)
-          }                
+      //   if(isClickButtonConnect){                                
+      //     if(ObjectConnect.connected){
+      //         callAPIUpdateObjectById()
+      //         toast.success('Kết nối với thiết bị thành công')
+      //         setObjectConnect({id:''})
+      //         setisClickButtonConnect(false)
+      //         handleClose() 
+      //     }   
+      //     else{
+      //       toast.error('Thiết bị đã được kết nối trước đó')
+      //       setisClickButtonConnect(false)
+      //     }                
           
-        }    
+      //   }    
           
-      },[ObjectConnect])
+      // },[ObjectConnect])
+
+      useEffect(() => {
+        const updateObjectAndHandleUI = async () => {
+            if (isClickButtonConnect) {
+                if (ObjectConnect.connected) {
+                    try {
+                        await callAPIUpdateObjectById(); // ✅ Đợi API chạy xong trước khi tiếp tục
+    
+                        toast.success('Kết nối với thiết bị thành công');
+                        setObjectConnect({ id: '' });
+                        setisClickButtonConnect(false);
+                        handleClose(); // ✅ Đóng popup sau khi API chạy xong
+                    } catch (error) {
+                        toast.error("Có lỗi xảy ra khi cập nhật thiết bị!");
+                    }
+                } else {
+                    toast.error('Thiết bị đã được kết nối trước đó');
+                    setisClickButtonConnect(false);
+                }
+            }
+        };
+    
+        updateObjectAndHandleUI();
+    }, [ObjectConnect]);
+    
       
       
       useEffect(() => {
@@ -179,6 +274,10 @@ function Connect({ show , handleClose }) {
       useEffect(() => {
         callAPIgetAllDevices()  
       },[])  
+
+
+
+
 
       const handleDeviceChange = (event) => {
             setSelectedDevice(event.target.value); // Cập nhật thiết bị đã chọn

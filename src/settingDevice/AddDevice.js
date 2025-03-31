@@ -41,11 +41,35 @@ function ModalAddDevice({ show , handleClose}) {
   //   }
   // };
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file); // Chuyển ảnh thành URL
-      setImage(imageUrl);
+    if (!file) return;
+
+    const reader = new FileReader();
+        reader.onload = (e) => {
+          setImage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    
+    try {
+        const response = await axios.post("https://mygps.runasp.net/Image/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        console.log(response)
+        setImageURL(response.data.url)
+
+      
+        
+    } catch (error) {
+        console.error("Lỗi upload:", error);
+        alert("Lỗi upload!");
+    } finally {
+        
     }
   };
 
@@ -113,21 +137,14 @@ function ModalAddDevice({ show , handleClose}) {
                   
 
                    if(checkidValid){
+                    
                    }
                    else{
                     toast.error('Bạn đã nhập sai ID thiết bị')  
                     return
                    }
 
-                  
-
-
-                  //  const checkName = listAllDevices.find((item) => item.name === nameDevice);
-
-                  //  if(checkName){  
-                  //    toast.error('Tên thiết bị đã tồn tại')  
-                  //    return
-                  //  } 
+              
               }
 
 
@@ -140,12 +157,14 @@ function ModalAddDevice({ show , handleClose}) {
           longitude: 0,   
           latitude: 0,  
           name: nameDevice,
-          imagePath: image,
+          imagePath: imageURL,
           battery: 28,
           temperature: 0,    
           stolen: false,
           bluetooth: "OFF",
           timeStamp: "2025-01-01T00:00:00",
+          alarmTime: "0001-01-01T00:00:00",
+          emergency: true,   
           smsNumber: "",
           package: "",
           registationDate: "0001-01-01T00:00:00",

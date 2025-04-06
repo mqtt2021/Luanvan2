@@ -18,6 +18,7 @@ import useGeoLocation from "./useGeoLocation"
 
 function SafeArea() {                
   const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
+  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
     const PositionSafe = new L.Icon({ // vị trí GPS khi bị trộm đi qua
         iconUrl: require("./asset/images/maker_user.png" ),
         iconSize: [50,50],
@@ -32,16 +33,47 @@ function SafeArea() {
     const [center, setCenter] = useState({lat: 10.780064402624358,lng: 106.64558796192786 }) // center
     //const [center, setCenter] = useState({lat: locationUser.coordinates.latitude ,lng: locationUser.coordinates.longtitude }) // center
     const mapRef = useRef()
-    const {id} = useParams(); // Lấy tham số động từ URL
-    
+    const {id} = useParams(); // Lấy tham số động từ URL    
     const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });
+    const timeoutRef = useRef(null);
 
-
-    useEffect(()=>{
-        if(locationUser.coordinates.latitude > 0){
-          setCenter({lat: locationUser.coordinates.latitude ,lng: locationUser.coordinates.longtitude })
-        }
-    },[locationUser])
+    // useEffect(() => {
+    //   if (!locationUser.loaded) {
+    //     toast.warn("Vui lòng bật vị trí để tiếp tục.");
+    //     return; // Chờ đến khi locationUser cập nhật
+    //   }
+    //   // Xóa timeout cũ trước khi tạo mới
+    //   if (timeoutRef.current) {
+    //       clearTimeout(timeoutRef.current);
+    //   }
+  
+    //   // Hàm này sẽ được gọi nếu không có vị trí trong 10 giây
+    //   const onTimeout = () => {
+    //       console.log("Không có vị trí trong 10 giây, thực hiện hành động mặc định");
+    //       setCenter({ lat: 10.88456, lng: 106.7818 });
+    //       setZOOM_LEVEL(9);
+    //   };
+  
+    //   // Tạo timeout mới
+    //   timeoutRef.current = setTimeout(onTimeout, 10000);
+  
+    //   // ✅ Kiểm tra trước khi truy cập tọa độ
+    //   if (locationUser.coordinates && locationUser.coordinates.latitude) {
+    //       setCenter({
+    //           lat: locationUser.coordinates.latitude,
+    //           lng: locationUser.coordinates.longtitude,
+    //       });
+    //       clearTimeout(timeoutRef.current); // Hủy timeout nếu có vị trí
+    //       toast.success("Lấy được vị trí");
+    //   } else {
+    //       console.log("Trình duyệt không hỗ trợ geolocation hoặc bị chặn");
+    //       toast.warn("Vui lòng bật vị trí để tiếp tục.");
+    //   }
+  
+    //   return () => clearTimeout(timeoutRef.current);
+    // }, [locationUser]);
+  
+  
 
     const getDeviceById = async (id) => { 
       let success = false;
@@ -95,34 +127,6 @@ function SafeArea() {
     };
 
 
-    // const getDeviceById = async () => { 
-      
-    //   setIsLoading(true); // Bắt đầu loading
-    //   let success = false;
-
-    //   while (!success) {   
-    //     try {
-    //       const response = await axios.get(`${url}/GPSDevice/GetGPSDeviceById?Id=${idDevice}`);         
-    //       const DeviceData = response.data;
-    
-    //       // Kiểm tra nếu dữ liệu nhận được hợp lệ
-    //       if (DeviceData) {    
-    //         // const ListStolen = LoggerData.filter((item) => item.stolenLines.length > 0);
-    //         setDevice(DeviceData); 
-    //         console.log(DeviceData)       
-    //         success = true; // Dừng vòng lặp khi dữ liệu hợp lệ và được xử lý
-    //       } else {
-    //         alert('ReLoad');
-    //       }
-    //     } catch (error) {
-    //       console.error('getDeviceById error, retrying...', error);  
-    //       await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
-    //     }
-    //   }
-
-     
-    // };
-
 
     const callAPIUpdateObjectById = async () => {
       let success = false;
@@ -165,14 +169,83 @@ function SafeArea() {
         getObjectById()
     }, [])
 
+
+     // Hàm được gọi nếu sau 10 giây không có vị trí
+  const onTimeout = () => {
+    console.log("Không có vị trí trong 10 giây, thực hiện hành động mặc định");
+    // Thực hiện hành động mặc định khi không có vị trí
+    // Ví dụ: setCenter một vị trí mặc định   
+    setCenter({lat: 10.780064402624358,lng: 106.64558796192786 });
+    setZOOM_LEVEL(9)
+  };
+
+  // Hàm được gọi nếu có vị trí
+  const onLocationSuccess = (position) => {
+    console.log("Vị trí đã được bật:", position);
+    setCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
+    
+  };
+
+  const delay = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  };
+
     useEffect(() => { 
-      if(Object.id !== '' && Object.safeRadius > 0){  
+      if(Object.id !== '' && Object.latitude !==  23.4){  
           setObjectClick({ latitude: Object.latitude , longitude: Object.longitude })
           setRadius(Object.safeRadius)  
           setCenter({lat: Object.latitude ,lng: Object.longitude })  
           setisDisplayCircle(true)
+
       } 
-    }, [Object])
+      if(Object.id !== '' && Object.latitude ===  23.4){
+
+        // Sử dụng
+        delay(5000).then(() => {
+          console.log('Đã chờ 5 giây');
+        });
+
+        console.log('locationUser.loaded',locationUser.loaded)
+
+        if(locationUser.loaded){
+
+        }
+        else{
+         
+        }
+
+        // Nếu Object không hợp lệ, hiển thị thông báo yêu cầu bật vị trí
+           
+
+            // Kiểm tra vị trí sau 10 giây
+            const timeout = setTimeout(() => {
+              // Nếu sau 10 giây không có vị trí, gọi hàm timeout
+              onTimeout();
+            }, 10000); // 10 giây
+          
+            // Kiểm tra xem người dùng có bật vị trí không
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  // Nếu có vị trí, hủy timeout và gọi hàm success
+                  clearTimeout(timeout);
+                  onLocationSuccess(position);
+                },
+                (error) => {
+                  // Nếu có lỗi khi lấy vị trí, hủy timeout và gọi hàm timeout
+                  clearTimeout(timeout);
+                  console.error("Lỗi khi lấy vị trí:", error);
+                  toast.warn('Hãy bật vị trí của bạn');
+                  onTimeout();
+                }
+              );
+            } else {
+              console.log("Trình duyệt không hỗ trợ geolocation");
+              onTimeout();
+            }
+
+      }
+    }, [Object, locationUser]) 
 
  
 

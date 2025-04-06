@@ -70,7 +70,7 @@ function Detail() {
             alert('ReLoad');
           }
         } catch (error) {
-          console.error('getDeviceById error, retrying...', error);  
+          toast.error("Lỗi khi lấy thông tin thiết bị") 
           await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
         }
       }
@@ -106,17 +106,13 @@ function Detail() {
           //     setDevices(prevDevices => [...prevDevices, device.name || 'Không có tên']);
           // }
       } catch (error) {
-          console.error('Lỗi khi quét thiết bị Bluetooth:', error);
+          //toast.error("Lỗi khi quét các thiết bị Bluetooth") 
       }
     };
 
     useEffect(() => {  
       if(Device.id !== ''){
-
-        
-
         setImage(Device.imagePath) 
-
         setTime(extractTime(Device.alarmTime))  
         if(Device.emergency){
           setIsEmergency(true)
@@ -132,12 +128,22 @@ function Detail() {
           scanBluetoothDevices()      
         }
         else{
+
           setIsOn(false)  
+          toast.success("BlueTooth đã được tắt thành công")
         }
 
+        // if(Device.buzzer === "ON"){
+        //   toast.success("Còi đã được bật thành công")
+        //   setIsOnBuzzer(true)
+            
+        // }
+        // else{
+        //   setIsOnBuzzer(false)  
+        //   toast.success("Còi đã được tắt thành công")
+        // }
+
         setIsLoading(false); // Kết thúc loading sau khi lấy dữ liệu xong
-        
-  
       }
       
     }, [Device]) 
@@ -170,7 +176,7 @@ function Detail() {
           } else {
           }
         } catch (error) {
-          console.error('getAllDevice error, retrying...', error);  
+          toast.error("Lỗi khi lấy thông tin đối tượng")
           await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
         }
       }
@@ -196,14 +202,12 @@ function Detail() {
     useEffect(() => {  
         const deviceId = getDeviceIdFromURL();              
         setIdDevice(deviceId)
-
         const phoneNumer = sessionStorage.getItem('phoneNumer');  
         setPhone(phoneNumer)
-        
     }, [])   
-
-    const handleshowModalUpdateFirmware= ()=> {   
-      setshowModalUpdateFỉmware(true)     
+   
+    const handleshowModalUpdateFirmware= ()=> {     
+          setshowModalUpdateFỉmware(true)     
     }
 
     const handleCloseModalUpdateFirmware=()=>{
@@ -262,12 +266,6 @@ function Detail() {
       }
     };
 
-
-    
-   
-
-
-
 const handleScanAndShow = async () => {
   setIsVisible(true);
   await scanBluetoothDevices();
@@ -295,13 +293,13 @@ const handleScanAndShow = async () => {
           const ObjectData = response.data;
           if (ObjectData === 'Update successfully!') { 
             //toast.success(`Đã gửi yêu cầu bật Bluetooth  ${bluetoothStatus === "ON" ? "bật" : "tắt"} thành công`);
-            toast.success(`Đã gửi yêu cầu bật Bluetooth`);
+            toast.success(`Đã gửi yêu cầu ${bluetoothStatus === "ON" ? "bật" : "tắt"} Bluetooth thành công`);
             success = true;              
           } else {                
-            toast.error("Xác lập không thành công");
+            toast.success(`Gửi yêu cầu ${bluetoothStatus === "ON" ? "bật" : "tắt"} Bluetooth không thành công`);
           }
         } catch (error) {
-          console.error("Get All Logger error, retrying...", error);
+            toast.success(`Gửi yêu cầu ${bluetoothStatus === "ON" ? "bật" : "tắt"} Bluetooth không thành công`);
           await new Promise(resolve => setTimeout(resolve, 1000)); 
         }
       }
@@ -329,14 +327,14 @@ const handleScanAndShow = async () => {
 
           const ObjectData = response.data;
           if (ObjectData === 'Update successfully!') { 
-            toast.success(`Còi đã được ${BuzzerStatus === "ON" ? "bật" : "tắt"} thành công`);
+            toast.success(`Đã gửi yêu cầu ${BuzzerStatus === "ON" ? "bật" : "tắt"} còi thành công`);
             success = true;
           } else {  
-            toast.error("Xác lập không thành công");
+            toast.error(`Gửi yêu cầu ${BuzzerStatus === "ON" ? "bật" : "tắt"} còi không thành công`);
           }
 
         } catch (error) {
-          console.error("Get All Logger error, retrying...", error);
+          toast.error(`Gửi yêu cầu ${BuzzerStatus === "ON" ? "bật" : "tắt"} còi không thành công`);
           await new Promise(resolve => setTimeout(resolve, 1000)); 
         }
       }
@@ -372,10 +370,10 @@ const handleScanAndShow = async () => {
             toast.success(`Trạng thái cảnh báo là ${StatusEmergency ? "Khẩn cấp" : "Bình thường"}`);
             success = true;
           } else {  
-            toast.error("Xác lập không thành công");
+            toast.error("Xác lập trạng thái cảnh báo không thành công");
           }
         } catch (error) {
-          console.error("callAPIUpdateObjecEmergencytById error, retrying...", error);
+            toast.error("Xác lập trạng thái cảnh báo không thành công");
           await new Promise(resolve => setTimeout(resolve, 1000)); 
         }
       }
@@ -406,10 +404,10 @@ const handleScanAndShow = async () => {
             toast.success(`Thời gian báo thức là ${timeObject} hàng ngày`);
             success = true;
           } else {  
-            toast.error("Xác lập không thành công");
+            toast.error("Xác lập thời gian báo thức không thành công");
           }
         } catch (error) {
-          console.error("callAPIUpdateObjecEmergencytById error, retrying...", error);
+            toast.error("Xác lập thời gian báo thức không thành công");
           await new Promise(resolve => setTimeout(resolve, 1000)); 
         }
       }
@@ -422,16 +420,12 @@ const handleScanAndShow = async () => {
       setTimeout(() => setIsPressed(false), 200); // Giữ hiệu ứng 200ms
     };
 
-
-
-    
     const firstRender = useRef(true); // Biến cờ để kiểm tra lần đầu render
     useEffect(() => {
       if (firstRender.current) {
         firstRender.current = false; // Đánh dấu lần đầu đã render
         return; // Ngăn không chạy lần đầu
       }
-  
       console.log("Đã chọn xong giờ:", time);
       // Có thể gọi API hoặc xử lý dữ liệu tại đây
     }, [time]); // Chạy khi `time` thay đổi, nhưng bỏ qua lần đầu tiên

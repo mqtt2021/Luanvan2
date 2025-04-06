@@ -50,7 +50,7 @@ function Devices() {
           alert('ReLoad');
         }
       } catch (error) {
-        console.error('CallAPIGetDeviceById error, retrying...', error);  
+        toast.error("Lỗi khi lấy thông tin thiết bị")  
         await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
       }
     }
@@ -75,8 +75,8 @@ function Devices() {
           toast.error('Nhuw cc')
           alert('ReLoad');
         }
-      } catch (error) {
-        console.error('CallAPIUpdateDeviceById error, retrying...', error);  
+      } catch (error) {  
+        toast.error("Lỗi khi cập nhật thông tin thiết bị") 
         await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
       }
     }
@@ -113,11 +113,11 @@ function Devices() {
           const listDevice = LoggerData.filter((item) => item.customerPhoneNumber === phoneNumer);
           setlistAllDevices(listDevice);      
           success = true; 
-        } else {
+        } else {   
 
         }
       } catch (error) {
-        console.error('getAllDevices error, retrying...', error);  
+        toast.error("Lỗi khi lấy thông tin tất cả thiết bị")  
         await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
       }
     }

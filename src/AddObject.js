@@ -139,9 +139,9 @@ function AddObject() {
                 
                   customerPhoneNumber: phoneNumer,
                   name: nameObject,
-                  longitude: locationUser.coordinates.longtitude,
-                  latitude:  locationUser.coordinates.latitude,
-                  description: descriptionObject,  
+                  longitude:  108.5,
+                  latitude:  23.4,
+                  description: descriptionObject,     
                   imagePath: imageURL,
                   safeRadius: 10,
                   size: "string"

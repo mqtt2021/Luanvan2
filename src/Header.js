@@ -29,6 +29,7 @@ function Header() {
   const { unreadCount, setUnreadCount, listNotifications, setListNotifications  } =  useContext(UserContext); 
   // const [listNotifications, setListNotifications] = useState([]);
   const [phone, setPhone] = useState('');
+  const [UserName, setUserName] = useState('');
   const [listAllDeices, setListAllDeices] = useState([]);   
   const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });
 
@@ -170,12 +171,22 @@ function Header() {
   },[listLoggerStolen])
 
 
-  const handleLogout = () => {                    
-
-    setDisplayNav(false)
+  const handleLogout = () => {   
     
-    sessionStorage.removeItem('idDevice')
-    sessionStorage.removeItem('phoneNumer')  
+    const ConfirmdeleteDevice = window.confirm("Bạn có chắc chắn muốn đăng xuất không không?");
+      if (ConfirmdeleteDevice) {
+
+        setDisplayNav(false)
+    
+        sessionStorage.removeItem('idDevice')
+        sessionStorage.removeItem('phoneNumer')  
+        
+       
+      } else {
+        console.log("Action canceled.");
+      }
+
+    
     
     logout()
    
@@ -257,16 +268,43 @@ function Header() {
           }
 
         };
+   
+        const getUserByPhone = async () => {   
+          let success = false;
+          while (!success) {
+            try {   
+              const response = await axios.get(`${url}/Customer/GetCustomerByPhoneNumber?phoneNumber=${phone}`);  
+              const LoggerData = response.data;
+            
+              // Kiểm tra nếu dữ liệu nhận được hợp lệ
+              if (LoggerData) {
+              
+               
+                setUserName(LoggerData.userName);
+                success = true;    
+              } else {
+              
+              }
+            } catch (error) {
+              console.error('getUserByPhone error, retrying...', error);  
+              await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
+            }
+          }
+
+        };
 
         useEffect(() => {  
           const phoneNumer = sessionStorage.getItem('phoneNumer');    
           setPhone(phoneNumer) 
           getAllDevices()
         }, [])
+
+        
         
         useEffect(() => {   
           if(phone !== ''){
-             getNotification(); 
+              getUserByPhone()
+              getNotification(); 
           }                     
         }, [phone])
          
@@ -291,7 +329,7 @@ function Header() {
                            
                             notificationBuffer = notificationBuffer + 1;
                             // Nếu buffer đủ 2 thông báo, cập nhật luôn
-                            if (notificationBuffer.lengt === 2) {
+                            if (notificationBuffer.length === 2) {  
                                 flushNotifications();
                             } else {
                                 // Nếu chưa đủ 2, đợi 500ms rồi cập nhật
@@ -308,7 +346,7 @@ function Header() {
         
                 function flushNotifications() {
                   if (notificationBuffer.length === 0) return;
-              
+               
                  
               // Cập nhật state bằng callback để đảm bảo lấy đúng state trước đó
               setUnreadCount(prev => {
@@ -316,9 +354,17 @@ function Header() {
                       notificationBuffer = 0; // Reset buffer sau khi cập nhật
                       return updatedNotifications;
               });
-                  // Cập nhật state bằng callback để đảm bảo lấy đúng state trước đó
+
+              toast.error("Chú ý, có thông báo mới!!!")
+
+                // const ConfirmdeleteDevice = window.confirm(`${obj.Description}`);
+                // if (ConfirmdeleteDevice) {
+                 
                   
-              
+                // } else {
+                //   console.log("Action canceled.");
+                // }
+                  // Cập nhật state bằng callback để đảm bảo lấy đúng state trước đó
                   clearTimeout(bufferTimeout);
                   bufferTimeout = null;
               }
@@ -340,7 +386,7 @@ function Header() {
             };
         }, [listAllDeices]);
 
-  //console.log('userHeader', user)
+  console.log('UserName', UserName)
   return (    
     <div className='header font-barlow'>  
 
@@ -352,16 +398,21 @@ function Header() {
                                 {unreadCount > 0 && (
                                         <div className="notificationBadgeMenu">{unreadCount}</div>
                                 )}  
-                          </div> 
-
-
-
-
-                        
+                          </div>                         
                           
                           <div className='logoHCMUT'>  
                               <img src={logo} alt="Example" />   
-                          </div>                       
+                          </div>
+
+                          <div className='divNameUser'>  
+                              <div className='userName'>Xin chào</div>   
+                              <div className='userName'>{UserName}</div>   
+                          </div>
+
+                          
+                          
+
+
                           <div className='divNavigation'>
                                 <Link to="/map">
                                   <div className='NavigationItem NavigationItemWarning '

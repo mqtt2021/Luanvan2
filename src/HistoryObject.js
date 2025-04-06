@@ -53,8 +53,8 @@ function HistoryObject() {
     const [displayRoutes, setDisplayRoutes] = useState(false)
     const [isConvertDateTimeInPopup, setisConvertDateTimeInPopup] = useState(false)
     const [Object, setObject] = useState({id:'', latitude: 0 , longitude: 0 });
-
-
+    const [isMapLoading, setIsMapLoading] = useState(false);
+  
     const getObjectById = async () => {
       let success = false;
       while (!success) {   
@@ -120,70 +120,26 @@ function HistoryObject() {
           currentRoutingRef.current.addTo(mapRef.current);
     }
 
-    // const RemoveRoute = () => {   // remove đường đi GPS Tracker
-    //   if (currentRoutingRef.current) {
-    //       currentRoutingRef.current.remove();
-    //       currentRoutingRef.current = null;
-    //   }
-    // };
-
-    // const calculateDistance = (point1, point2) => {
-    //   const latLng1 = L.latLng(point1.latitude, point1.longtitude);
-    //   const latLng2 = L.latLng(point2.latitude, point2.longtitude);
-    //   const distance = latLng1.distanceTo(latLng2);     
-    //   return distance;
-    // };
-
-    // const handleChange = (event) => { // Chọn Logger để xem lịch sử
-    //     const HistoryObjectStolen = listLoggerStolenHistoryObject.find((item,index) => item.id === event.target.value )
-    //     setSelecteLogger(HistoryObjectStolen)
-    //     setSelectedOption(event.target.value);
-    // };
-
-    // useEffect(() => {
-    //      if(action === 'Delete'){
-    //           const HistoryObjectStolen = listLoggerStolenHistoryObject.find((item,index) => item.id === selectedLogger.id )
-    //           setSelecteLogger(HistoryObjectStolen)
-    //      }
-    //      if(action === 'See'){
-
-    //      }
-    // },[action,listLoggerStolenHistoryObject])
-
-    // useEffect(() => {
-    //      if(action === 'Delete'){
-    //       setListPositionWantToDisplay([]);
-    //       setDisplayRoutes(false);          
-    //      }
-    //      if(action === 'See'){
-
-    //      }
-    // },[selectedLogger])
-
-    // function changeDateToFixed(timestamp) {
-    //   const parts = timestamp.split('T');
-    //   const part2 = parts[0].split('-');
-    //   const newTimestamp = `${part2[0]}-${part2[2]}-${part2[1]}T${parts[1]}`;
-    //   return newTimestamp;
-    // }
+    
   
-    function findMinMaxTimestamps(filteredLines) {  
+    function findMinMaxTimestamps(filteredLines) {
       let minObj = filteredLines[0];
       let maxObj = filteredLines[0];
       filteredLines.forEach(item => {
-
         const currentTimestamp = new Date(item.timestamp);
-
         if (currentTimestamp < new Date(minObj.timestamp)) {
           minObj = item;
         }
-    
         if (currentTimestamp > new Date(maxObj.timestamp)) {
           maxObj = item;
         }
       });
-    
-      return { min: minObj, max: maxObj };
+      // Lọc ra những phần tử không phải min hoặc max
+      const newLine = filteredLines.filter(item => item.timestamp !== minObj.timestamp && item.timestamp !== maxObj.timestamp);
+      setHistoryObject(newLine)
+      setBegin(minObj)
+      setEnd(maxObj)
+      setCenter({lat: minObj.latitude , lng: minObj.longitude })
     }
    
     const getPositionDevice = async (id, startOfDay, endOfDay) => {     
@@ -196,7 +152,15 @@ function HistoryObject() {
           const PositionDeviceData = response.data;
     
           if (PositionDeviceData) {
-            setHistoryObject(PositionDeviceData); 
+
+            
+            if(PositionDeviceData.length > 0){
+              findMinMaxTimestamps(PositionDeviceData)
+            }   
+            else{
+              setHistoryObject([])
+              setDisplayRoutes(false)
+            }
             console.log('PositionDeviceData', PositionDeviceData);         
             success = true; 
             toast.success("Đã lấy được lộ trình")  
@@ -213,194 +177,51 @@ function HistoryObject() {
 
 
      const handleShowRoute = () => { 
-    
-    
-                setisConvertDateTimeInPopup(true)
+
                 const startOfDay = formatDateTime(valueFrom);
                 const endOfDay = formatDateTime(valueTo);
-    
-                getPositionDevice(id, startOfDay, endOfDay);
-    
-    
-                console.log('startOfDay', startOfDay)                  
-                console.log('endOfDay', endOfDay)  
-                       
+
+
                 if(startOfDay < endOfDay){
+                      setIsMapLoading(true)
+                      setisConvertDateTimeInPopup(true)
+                      getPositionDevice(id, startOfDay, endOfDay);
                 }
                 else{
                   toast.error('Thời gian không hợp lệ')
-                }                    
-            
+                  setHistoryObject([])
+                  setIsMapLoading(false)  
+                }    
+                  
         }
 
 
-          useEffect(() => { 
-              if(historyObject.length > 0){
-                setDisplayRoutes(true);
-              }
-              
-            }, [historyObject])
+        const isFirstRender = useRef(true);
 
-    // const handleShowRoute = () => { 
-    //     if(selectedOption === ''){
-    //                 toast.error('Bạn chưa chọn trạm cần xem')
-    //     }
-    //     else{
-    //         const startOfDay = new Date(valueFrom);                      
-    //         const endOfDay = new Date(valueTo);
+        useEffect(() => {
+          if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return; // Ngăn chạy lần đầu
+          }
+        
+          setIsMapLoading(false);
+          setDisplayRoutes(true);
 
-    //         if(startOfDay < endOfDay){
-    //           if( endOfDay < new Date('2024-10-02T23:59:59') || startOfDay > new Date('2024-10-14T13:30:00')    ){  // giữ nguyên không convert khi lọc nhưng convert ở popup
-                
-    //             setisConvertDateTimeInPopup(true)
+          if(historyObject.length === 0){
+            toast.success("Chưa ghi nhận lộ trình trong thời gian này")
+            setDisplayRoutes(false)
+          }
 
-    //             const filteredLines = selectedLogger.stolenLines.filter(line => {                                     
-    //                   const timestamp = new Date(line.timestamp);
-    //                   return timestamp >= startOfDay && timestamp <= endOfDay;
-    //             });
+        }, [historyObject]);
 
-    //             if(filteredLines.length === 0){
-    //               toast.error('Không có dữ liệu')
-    //               setListPositionWantToDisplay([])
-    //               setDisplayRoutes(false);    
-    //             }  
-    //             else{
-    //                 setBegin(findMinMaxTimestamps(filteredLines).min)
-    //                 setEnd(findMinMaxTimestamps(filteredLines).max)
-    //                 const newArr = filteredLines.filter(item => item !== findMinMaxTimestamps(filteredLines).min && item !== findMinMaxTimestamps(filteredLines).max);
-    //                 setListPositionWantToDisplay(newArr);
-    //                 setDisplayRoutes(true); 
-    //                 setCenter({lat: 10.736910478129415 , lng: 106.66432499334259 })
-    //                 setZOOM_LEVEL(9)
-    //             }
-    //           }    
-
-    //           else{  // convert khi lọc nhưng không convert ở popup
-                
-    //             setisConvertDateTimeInPopup(false)
-                
-    //             const LineAfterConvert = selectedLogger.stolenLines.map(item => {                                     
-    //                   const newItem = convertDateTimeToFilter(item);
-    //                   return newItem
-    //             });
-
-    //             const filteredLines = LineAfterConvert.filter(line => {                                     
-    //                   const   timestamp = new Date(line.timestamp);
-    //                   return  timestamp >= startOfDay && timestamp <= endOfDay;
-    //             });
-
-    //             if(filteredLines.length === 0){
-    //               toast.error('Không có dữ liệu')
-    //               setListPositionWantToDisplay([]);
-    //               setDisplayRoutes(false); 
-    //             }  
-    //             else{
-    //                 setBegin(findMinMaxTimestamps(filteredLines).min)
-    //                 setEnd(findMinMaxTimestamps(filteredLines).max)
-    //                 const newArr = filteredLines.filter(item => item !== findMinMaxTimestamps(filteredLines).min && item !== findMinMaxTimestamps(filteredLines).max);
-    //                 setListPositionWantToDisplay(newArr);
-    //                 setDisplayRoutes(true); 
-    //                 setCenter({lat:10.80896076479404 , lng: 106.68593859151143 })
-    //                 setZOOM_LEVEL(9)
-    //             }
-    //           }
-    //         }
-    //         else{
-    //           toast.error('Thời gian không hợp lệ')
-    //         }                    
-    //     }
-    // }
-
-  //     const handleShowRouteAfterDelete = () => { 
-  //     if(selectedOption === ''){
-  //       toast.error('Bạn chưa chọn trạm cần xem')
-  //     }
-  //     else{
-  //         const startOfDay = new Date(valueFrom);         
-  //         const endOfDay = new Date(valueTo);
-  //         const filteredLines = selectedLogger.stolenLines.filter(line => {
-  //                 const timestampformat = changeDateToFixed(line.timestamp) 
-  //                 const timestamp = new Date(timestampformat);
-  //                 return timestamp >= startOfDay && timestamp <= endOfDay;
-  //         });
-
-  //         if(filteredLines.length === 0){
-  //             window.alert('Không có dữ liệu handleShowRouteAfterDelete')
-  //         }  
-  //         else{
-  //             setBegin( filteredLines[0] )
-  //             setEnd(filteredLines[filteredLines.length-1] )
-  //             const newArr = filteredLines.slice(1, -1);
-  //             setListPositionWantToDisplay(newArr);
-  //             setDisplayRoutes(true); 
-  //             setCenter({lat:filteredLines[0].latitude , lng: filteredLines[0].longtitude })
-  //             setZOOM_LEVEL(18)
-  //         }   
-  //     }
-  // }
+ 
 
     const handleMapClickGetLocation = (e) => {  // lấy tọa độ khi Click vô Map
       console.log('lat: '+ e.latlng.lat)
       console.log('lng: '+ e.latlng.lng)
     };
 
-    // const executeFunctions = async () => {
-    //   await  getLogger();       // Cập nhật lại danh sách Logger
-    //   setAction('Delete')      // Sau đó thực hiện hàm tiếp theo
-    // };
-
-    // const handleDeleteRoutes = async () => {
-    // if (selectedOption === '') {
-    //   toast.error('Bạn chưa chọn trạm cần xóa')
-    // } else {
-    //     // Hiển thị cửa sổ xác nhận
-    //     const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa các dữ liệu này không?');
-    //     if (confirmDelete) {
-    //         const startOfDay = new Date(valueFrom);
-    //         const endOfDay = new Date(valueTo);
-    //         if(startOfDay < endOfDay){
-
-    //             const filteredLines = selectedLogger.stolenLines.filter(line => {
-    //             const timestamp = new Date(line.timestamp);
-    //             return timestamp >= startOfDay && timestamp <= endOfDay;
-    //             }); 
-
-    //             if(filteredLines.length > 0){
-    //               const startDate = formatDateTime(valueFrom);
-    //               const endDate = formatDateTime(valueTo);
-    //               const loggerId = selectedLogger.id;                             
-    //               try {
-    //                   // Gọi API để xóa các phần tử trong stolenLine theo ngày
-    //                   const response = await axios.delete(`${url}/StolenLine/DeleteStolenLineByDate/LoggerId=${loggerId}?startDate=${startDate}&endDate=${endDate}`);
-                      
-    //                   if (response.status === 200) {
-    //                       toast.success('Xóa thành công!');                                           
-    //                       // executeFunctions();
-    //                   } else {
-    //                       toast.error('Có lỗi xảy ra khi xóa!');
-    //                   }
-    //               } catch (error) {
-    //                   console.error('Lỗi khi gọi API xóa:', error);
-    //                   toast.error('Có lỗi xảy ra khi xóa!');
-    //               }
-    
-    //             }
-    //             else{
-    //                   toast.error('Không có dữ liệu');
-    //             }
-    //         }
-    //         else{
-    //           toast.error('Thời gian không hợp lệ')
-    //         }
-      
-           
-
-           
-    //     } else {
-     
-    //     }
-    // }
-    // }
+  
 
   
 
@@ -491,7 +312,7 @@ function HistoryObject() {
                                                                <button 
                                                                    type="button" 
                                                                    class="btn btn-info"
-                                                                   onClick={handleShowRoute}
+                                                                   onClick={handleShowRoute} 
                                                                
                                                                >Xem</button>
                                                                
@@ -507,7 +328,14 @@ function HistoryObject() {
                         </div> 
                     </div>  
 
-                  <MapContainer 
+
+                    { isMapLoading ? ( 
+                    <div className="loadingContainer">
+                            <div className="spinner"></div> {/* Hiển thị hiệu ứng loading */}
+                            <p>Đang tải...</p>
+                    </div>
+                    ) : (
+                      <MapContainer 
                           center={center} 
                           zoom={ZOOM_LEVEL}     
                           ref={mapRef}>
@@ -532,42 +360,49 @@ function HistoryObject() {
                                   </Marker>
                                 ))} 
 
+                                {displayRoutes && 
+                                    <Marker 
+                                        className='maker'
+                                        position={[begin.latitude , begin.longitude]} 
+                                        icon= { beginMarker } 
+                                        zIndexOffset={ 1000 } 
+                                                                    
+                                    >
+                                      <Popup>
+                                          <div className='div-popup'>
+                                          <div>{convertDateTimeBefore(begin.timestamp)}</div>                                                                
+                                          </div>                                                                             
+                                      </Popup>    
+                                  </Marker>} 
+                                  
 
 
-                                {/* {displayRoutes && 
-                                  <Marker 
-                                      className='maker'
-                                      position={[begin.latitude , begin.longtitude]}
-                                      icon= { beginMarker } 
-                                      zIndexOffset={ 1000 } 
-                                                                  
-                                  >
-                                    <Popup>
-                                        <div className='div-popup'>
-                                        <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(begin.timestamp) : convertDateTimeAfter(begin.timestamp)}</div>                                                                
-                                        </div>                                                                             
-                                    </Popup>    
-                                </Marker>
-                                }  */}
-
-                                {/* {displayRoutes && 
-                                  <Marker 
-                                      className='maker'    
-                                      position={[end.latitude , end.longtitude]}
-                                      icon= { endMarker }
-                                      zIndexOffset={  1000 } 
-                                                                  
-                                  >
-                                    <Popup>
-                                        <div className='div-popup'>
-                                            <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(end.timestamp) : convertDateTimeAfter(end.timestamp)}</div>                                                                    
-                                        </div>                                                                             
-                                    </Popup>    
-                                </Marker>
-                                }  */}
+                                  {displayRoutes && 
+                                    <Marker 
+                                        className='maker'    
+                                        position={[end.latitude , end.longitude]}
+                                        icon= { endMarker }
+                                        zIndexOffset={  1000 } 
+                                                                    
+                                    >
+                                      <Popup>
+                                          <div className='div-popup'>
+                                              <div>{convertDateTimeBefore(end.timestamp)}</div>                                                                    
+                                          </div>                                                                             
+                                      </Popup>    
+                                  </Marker>}
 
 
+
+                                
+
+
+  
                     </MapContainer>
+
+                    )}
+
+                  
             </div>
 
             </div>                       

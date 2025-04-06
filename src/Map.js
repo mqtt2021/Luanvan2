@@ -121,7 +121,7 @@ function Map() {
         } else {   
         }
       } catch (error) {
-        console.error('getAllDevices error, retrying...', error);  
+        toast.error("Lỗi khi lấy thông tin thiết bị") 
         await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
       }
     }                
@@ -148,7 +148,7 @@ function Map() {
         } else {
         }
       } catch (error) {
-        console.error('getInforCustomers error, retrying...', error);  
+        toast.error("Lỗi khi lấy thông tin người dùng")  
         await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
       }
     }
@@ -169,7 +169,7 @@ function Map() {
         } else {
         }
       } catch (error) {
-        console.error('getAllObject error, retrying...', error);  
+        toast.error("Lỗi khi lấy thông tin đối tượng") 
         await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
       }
     }
@@ -206,7 +206,7 @@ useEffect(() => {
     const [address, setAddress] = useState("");
 
 
-    const getAddressFromCoordinates = async (lat, lon) => {
+    const getAddressFromCoordinates = async (lat, lon) => {  
       try {
         const response = await axios.get(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
@@ -459,24 +459,17 @@ function convertDateTime(inputString) {
     }
   }, [isDisplayMakerOpenPopup, pressPositionWarning]); 
   
-  
-   
-
-
   const [deviceAddresses, setDeviceAddresses] = useState({});
   const [isHaveDeviceAddresses, setIsHaveDeviceAddresses] = useState(false);
 
 
   useEffect(() => {
-
     if(isLoadingAPIDevices){
       if(listAllDevices.length === 0){
         setIsMapLoading(false);
         return;
-
       }
     }
-
     if(listAllDevices.length > 0){
         const firstDeviceId = listAllDevices[0].id; // Lấy id của thiết bị đầu tiên
         if (deviceAddresses[firstDeviceId] !== undefined) {      

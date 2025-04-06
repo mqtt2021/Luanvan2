@@ -681,7 +681,7 @@ const handleScanAndShow = async () => {
 
 
     const handleDeleteDevice=() => {
-      const ConfirmdeleteDevice = window.confirm("Bạn có chắc muốn xóa thiết bị này không?");
+      const ConfirmdeleteDevice = window.confirm("Bạn có chắc chắn muốn xóa đối tượng này không?");
       if (ConfirmdeleteDevice) {
         CallAPIDeleteDevice()
        

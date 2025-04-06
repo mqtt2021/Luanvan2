@@ -41,8 +41,6 @@ function App() {
 
   },[location]) 
 
-
-
   console.log('App accessRouteRegister',accessRouteRegister)  
   console.log('App accessRouteOTP',accessRouteOTP)  
   

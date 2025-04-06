@@ -17,6 +17,26 @@
         display: none; 
       }
     }
+    .divNameUser{
+      
+      width: 100%;
+      height: 10%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .userName{
+        color: #080809;
+        font-weight: 600;
+        font-size: 20px;
+
+      }
+      @media (max-width: 768px) {
+        display: none; 
+      }
+    }
+
+
     .divNavigation{
         width: 100%;
 

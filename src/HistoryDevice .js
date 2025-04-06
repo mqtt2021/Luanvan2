@@ -14,10 +14,11 @@ import {  toast } from 'react-toastify';
 import { UserContext } from './usercontext';  
 import { useParams } from "react-router-dom";
 import { url } from './services/UserService';
+import { min } from 'moment';
 
 
 function HistoryDevicesDevice() {  
-
+  const [isMapLoading, setIsMapLoading] = useState(false);
     const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });     
     const [PositionDevice, setPositionDevice] = useState([]);        
     const {id} = useParams(); // Lấy tham số động từ URL
@@ -38,10 +39,10 @@ function HistoryDevicesDevice() {
     const endMarker = new L.Icon({ // vị trí GPS khi bị trộm đi qua
         iconUrl: require("./asset/images/end.png" ),
         iconSize: [42,50],
-        iconAnchor: [28, 50],// nhỏ thì sang phải, xuống     
+        iconAnchor: [23, 50],// nhỏ thì sang phải, xuống     
         popupAnchor: [-5, -45], 
     })   
-    const [valueFrom, onChangeFrom] = useState(new Date());
+    const [valueFrom, onChangeFrom] = useState(new Date());  
     const [valueTo, onChangeTo] = useState(new Date());
     const [selectedOption, setSelectedOption] = useState('');
     const [selectedLogger, setSelecteLogger] = useState({});
@@ -49,12 +50,13 @@ function HistoryDevicesDevice() {
     const [listPositionWantToDisplay, setListPositionWantToDisplay] = useState([]);
     const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(9) // độ zoom map
     const [center, setCenter] = useState({lat: 10.780064402624358,lng: 106.64558796192786 }) // center
-    const [begin, setBegin ] = useState({}) 
-    const [end, setEnd ] = useState({})   
+    const [begin, setBegin ] = useState({latitude: 0, longitude : 0})              
+    const [end, setEnd ] = useState({latitude: 0, longitude : 0})      
     const [action, setAction] = useState('')
     const mapRef = useRef() 
     const [displayRoutes, setDisplayRoutes] = useState(false)
     const [isConvertDateTimeInPopup, setisConvertDateTimeInPopup] = useState(false)
+    const [getPositionDone, setgetPositionDone] = useState(false)
     
     // const getLogger = async () => {
     //   let success = false;
@@ -102,13 +104,30 @@ function HistoryDevicesDevice() {
       }
     };
 
+
+
+
+    const isFirstRender = useRef(true);
     useEffect(() => { 
-      if(PositionDevice.length > 0){
-        setDisplayRoutes(true);
+
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return; // Ngăn chạy lần đầu
+      }
+
+      setIsMapLoading(false);
+
+      if(PositionDevice.length > 0){  
+          setDisplayRoutes(true); 
       }
       
-    }, [PositionDevice])
+        if(PositionDevice.length === 0){
+          toast.success("Chưa ghi nhận lộ trình của thiết bị") 
+        }
 
+
+    }, [PositionDevice])
+       
     useEffect(() => { 
         getDeviceById()
         setPercentBattery(0)
@@ -210,19 +229,20 @@ function HistoryDevicesDevice() {
       let minObj = filteredLines[0];
       let maxObj = filteredLines[0];
       filteredLines.forEach(item => {
-
         const currentTimestamp = new Date(item.timestamp);
-
         if (currentTimestamp < new Date(minObj.timestamp)) {
           minObj = item;
         }
-    
         if (currentTimestamp > new Date(maxObj.timestamp)) {
           maxObj = item;
         }
       });
-    
-      return { min: minObj, max: maxObj };
+      // Lọc ra những phần tử không phải min hoặc max
+      const newLine = filteredLines.filter(item => item.timestamp !== minObj.timestamp && item.timestamp !== maxObj.timestamp);
+      setPositionDevice(newLine)
+      setBegin(minObj)
+      setEnd(maxObj)
+      setCenter({lat: minObj.latitude , lng: minObj.longitude })
     }
    
     const getPositionDevice = async (id, startOfDay, endOfDay) => {     
@@ -235,38 +255,58 @@ function HistoryDevicesDevice() {
           const PositionDeviceData = response.data;
     
           if (PositionDeviceData) {
-            setPositionDevice(PositionDeviceData); 
+            // setPositionDevice(PositionDeviceData); 
             console.log('PositionDeviceData', PositionDeviceData);
-            toast.success("Đã lấy được lộ trình")
+            
             setZOOM_LEVEL(9)             
-            success = true;   
+            success = true;
+            if(PositionDeviceData.length > 0){
+              findMinMaxTimestamps(PositionDeviceData)
+            }   
+            else{
+              setPositionDevice([])
+              setDisplayRoutes(false)
+            }
+           
+            toast.success("Đã lấy được lộ trình thiết bị")
+
           } else {
             alert('ReLoad');
           }
         } catch (error) {
-          console.error('getPositionDevice error, retrying...', error);     
+              toast.error("Không lấy được lộ trình thiết bị")   
           await new Promise(resolve => setTimeout(resolve, 1000)); 
         }
       }
+
+      setgetPositionDone(true)
+
+
     };
 
+
+    
+
     const handleShowRoute = () => { 
-            setisConvertDateTimeInPopup(true)
+           
             const startOfDay = formatDateTime(valueFrom);
             const endOfDay = formatDateTime(valueTo);
 
-            getPositionDevice(id, startOfDay, endOfDay);
-
-
-            console.log('startOfDay', startOfDay)                  
-            console.log('endOfDay', endOfDay)  
-                   
             if(startOfDay < endOfDay){
+              setIsMapLoading(true)
+              getPositionDevice(id, startOfDay, endOfDay);
             }
             else{
               toast.error('Thời gian không hợp lệ')
-            }                    
-        
+            
+              setPositionDevice([])
+              setDisplayRoutes(false)
+              setIsMapLoading(false)  
+
+              return;
+            }  
+            console.log('startOfDay', startOfDay)                  
+            console.log('endOfDay', endOfDay)    
     }
 
       const handleShowRouteAfterDelete = () => { 
@@ -386,7 +426,9 @@ function HistoryDevicesDevice() {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  };                                
+  };       
+  
+  console.log('PositionDevice', PositionDevice)
                                       
   return (   
     <div className='HistoryDevices'> 
@@ -448,11 +490,18 @@ function HistoryDevicesDevice() {
 
                   <div className='mapStolenLineDevice'> 
                     <div className='HistoryDevicesDeviceTitle'>
-                       <div className='HistoryDevicesDeviceTitleItem'>
+                        <div className='HistoryDevicesDeviceTitleItem'>
                               { `Lộ trình di chuyển thiết bị ${Device.name}` }     
                         </div> 
-                    </div>          
-                    <MapContainer 
+                    </div> 
+
+                    { isMapLoading ? ( 
+                    <div className="loadingContainer">
+                            <div className="spinner"></div> {/* Hiển thị hiệu ứng loading */}
+                            <p>Đang tải...</p>
+                    </div>
+                    ) : (
+                      <MapContainer 
                           center={center} 
                           zoom={ZOOM_LEVEL}     
                           ref={mapRef}>
@@ -478,40 +527,45 @@ function HistoryDevicesDevice() {
                                 ))} 
 
 
-{/* 
-                                {displayRoutes && 
-                                  <Marker 
-                                      className='maker'
-                                      position={[begin.latitude , begin.longtitude]}
-                                      icon= { beginMarker } 
-                                      zIndexOffset={ 1000 } 
-                                                                  
-                                  >
-                                    <Popup>
-                                        <div className='div-popup'>
-                                        <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(begin.timestamp) : convertDateTimeAfter(begin.timestamp)}</div>                                                                
-                                        </div>                                                                             
-                                    </Popup>    
-                                </Marker>
-                                } 
-                                {displayRoutes && 
-                                  <Marker 
-                                      className='maker'    
-                                      position={[end.latitude , end.longtitude]}
-                                      icon= { endMarker }
-                                      zIndexOffset={  1000 } 
-                                                                  
-                                  >
-                                    <Popup>
-                                        <div className='div-popup'>
-                                            <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(end.timestamp) : convertDateTimeAfter(end.timestamp)}</div>                                                                    
-                                        </div>                                                                             
-                                    </Popup>    
-                                </Marker>
-                                }  */}
+  
+                                  {displayRoutes && 
+                                    <Marker 
+                                        className='maker'
+                                        position={[begin.latitude , begin.longitude]} 
+                                        icon= { beginMarker } 
+                                        zIndexOffset={ 1000 } 
+                                                                    
+                                    >
+                                      <Popup>
+                                          <div className='div-popup'>
+                                          <div>{convertDateTimeBefore(begin.timestamp)}</div>                                                                
+                                          </div>                                                                             
+                                      </Popup>    
+                                  </Marker>} 
+                                  
+
+
+                                  {displayRoutes && 
+                                    <Marker 
+                                        className='maker'    
+                                        position={[end.latitude , end.longitude]}
+                                        icon= { endMarker }
+                                        zIndexOffset={  1000 } 
+                                                                    
+                                    >
+                                      <Popup>
+                                          <div className='div-popup'>
+                                              <div>{convertDateTimeBefore(end.timestamp)}</div>                                                                    
+                                          </div>                                                                             
+                                      </Popup>    
+                                  </Marker>}
+                                 
 
 
                     </MapContainer>
+
+                    )}         
+                    
       </div>
       </div>                       
      

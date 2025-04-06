@@ -42,7 +42,7 @@ function PositionDevice() {
     const [IDDevice, setIDDevice] = useState('');  
 
     const [listPositionWantToDisplay, setListPositionWantToDisplay] = useState([]);
-    const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(15)
+    const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(18)
     const [center, setCenter] = useState({lat: 10.780064402624358,lng: 106.64558796192786 }) // center
     const [begin, setBegin ] = useState({}) 
     const [end, setEnd ] = useState({})   
@@ -207,7 +207,7 @@ function PositionDevice() {
         }));  
 
         setCenter({lat: parseFloat(match[2]),lng: parseFloat(match[1]) })
-        setZOOM_LEVEL(15)
+        setZOOM_LEVEL(18)
       }
     }
 

@@ -173,28 +173,22 @@ function Header() {
 
   const handleLogout = () => {   
     
-    const ConfirmdeleteDevice = window.confirm("Bạn có chắc chắn muốn đăng xuất không không?");
+      const ConfirmdeleteDevice = window.confirm("Bạn có chắc chắn muốn đăng xuất không không?");
+      
       if (ConfirmdeleteDevice) {
-
         setDisplayNav(false)
-    
         sessionStorage.removeItem('idDevice')
         sessionStorage.removeItem('phoneNumer')  
-        
-       
-      } else {
-        console.log("Action canceled.");
-      }
-
-    
-    
-    logout()
-   
-    if(user.auth){   
+        logout()
+        if(user.auth){   
           toast.success('Đăng xuất thành công')
           // navigate('/login')     
-         
-    }
+        }
+      } else {    
+            return;
+      }
+
+     
   }   
 
 
@@ -532,7 +526,7 @@ function Header() {
 
                                       </div> 
                                   </Link>     
-                                  <Link  to="/">             
+                                  {/* <Link  to="/">              */}
                                     <div className='NavigationItem'>
                                           <div 
                                                 onClick={handleLogout}
@@ -542,7 +536,7 @@ function Header() {
                                           </div>
                                     </div>
 
-                                  </Link>       
+                                  {/* </Link>        */}
                                  
                           </div>
 
@@ -662,7 +656,7 @@ function Header() {
 
                                       </div> 
                                   </Link>
-                                  <Link  to="/">             
+                                  {/* <Link  to="/">              */}
                                     <div className='NavigationItem'>
                                           <div 
                                                 onClick={handleLogout}
@@ -672,7 +666,7 @@ function Header() {
                                           </div>
                                     </div>
 
-                                  </Link>                                                                                                                                                                   
+                                  {/* </Link>   */}
                           </div>
                           }
                   </div>

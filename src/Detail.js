@@ -1,24 +1,14 @@
 import React,{useState, useEffect, useRef  } from 'react'
 import DatePicker from 'react-datepicker';
 import './Detail.scss'
-import Table from 'react-bootstrap/Table';
-import ModalUpdateFirmware from './settingDevice/Firmware';
-import {Link, useNavigate} from "react-router-dom";
-import imgDevice from './asset/images/Device.jpg'
-import { FaFile } from "react-icons/fa";
 import { MdDriveFileRenameOutline } from "react-icons/md";
-import { HiIdentification } from "react-icons/hi2";
 import { IoIosTime } from "react-icons/io";
-import { PiBatteryWarningFill } from "react-icons/pi";
-import { FaFileArchive } from "react-icons/fa";
-import { url } from './services/UserService';
-import { useParams } from 'react-router-dom';                 
+import { url } from './services/UserService';                
 import axios from 'axios';
 import { FaBluetooth } from "react-icons/fa";
 import {useLocation}  from "react-router-dom";
 import { LuAlarmClock } from "react-icons/lu";
 import { GrConnect } from "react-icons/gr";
-import { ToastContainer } from 'react-toastify';
 import {  toast } from 'react-toastify';
 import TimePicker from "react-time-picker";
 import "react-time-picker/dist/TimePicker.css";
@@ -37,7 +27,8 @@ function Detail() {
     const [isEmergency, setIsEmergency] = useState(false);
     const location = useLocation();     
     const [time, setTime] = useState("00:00:00"); // Giá trị mặc định
-    const [ObjectIsConnect, setObjectIsConnect] = useState({}) ;     
+    const [timestamp, settimestamp] = useState("00:00:00"); // Giá trị mặc định
+    const [ObjectIsConnect, setObjectIsConnect] = useState({id:""}) ;     
     const [devices, setDevices] = useState([]);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -48,23 +39,23 @@ function Detail() {
     const [valueTo, onChangeTo] = useState(new Date());
     const [showModalUpdateFirmware, setshowModalUpdateFỉmware] = useState(false);                 
     const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });   
-    const [listHistorBattery, setListHistorBattery] = useState([]);   
+    const [listHistorBattery, setListHistorBattery] = useState([]);
+    const [buffer, setBuffer] = useState([]);
+    
+    
     
     const getDeviceById = async () => { 
-      
       setIsLoading(true); // Bắt đầu loading
       let success = false;
-
       while (!success) {   
         try {
           const response = await axios.get(`${url}/GPSDevice/GetGPSDeviceById?Id=${idDevice}`);         
           const DeviceData = response.data;
-    
           // Kiểm tra nếu dữ liệu nhận được hợp lệ
           if (DeviceData) {    
             // const ListStolen = LoggerData.filter((item) => item.stolenLines.length > 0);
             setDevice(DeviceData); 
-            console.log(DeviceData)       
+            // //console.log(DeviceData)       
             success = true; // Dừng vòng lặp khi dữ liệu hợp lệ và được xử lý
           } else {
             alert('ReLoad');
@@ -74,23 +65,17 @@ function Detail() {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
         }
       }
-
-     
     };
 
-
     const getDeviceIdFromURL = () => {
-      
       const pathSegments = location.pathname.split('/'); 
       return pathSegments[3]; // "G001" ở vị trí thứ 3 trong mảng
     };
-
 
     useEffect(() => {  
       if(idDevice !== ''){
         getDeviceById()   
       }
-      
     }, [idDevice]) 
 
     const scanBluetoothDevices = async () => {
@@ -99,21 +84,29 @@ function Detail() {
               acceptAllDevices: true,
               optionalServices: ['battery_service']
           });
-    
-          console.log(device)
-    
-          // if (device) {
-          //     setDevices(prevDevices => [...prevDevices, device.name || 'Không có tên']);
-          // }
       } catch (error) {
           //toast.error("Lỗi khi quét các thiết bị Bluetooth") 
       }
     };
 
+
+
+    const isFirstRender = useRef(true);
     useEffect(() => {  
+
       if(Device.id !== ''){
-        setImage(Device.imagePath) 
+
+        // if (isFirstRender.current) {
+        //   isFirstRender.current = false;
+        //   return; // Ngăn chạy lần đầu
+        // }
+
+        setImage(Device.imagePath)
+
         setTime(extractTime(Device.alarmTime))  
+
+        settimestamp(convertDateTimeBefore(Device.timeStamp))
+
         if(Device.emergency){
           setIsEmergency(true)
         }
@@ -122,26 +115,28 @@ function Detail() {
         }
 
 
-        if(Device.bluetooth === "ON"){
-          toast.success("BlueTooth đã được bật thành công")
-          setIsOn(true)
-          scanBluetoothDevices()      
-        }
-        else{
 
-          setIsOn(false)  
-          toast.success("BlueTooth đã được tắt thành công")
-        }
 
-        // if(Device.buzzer === "ON"){
+        // if(Device.bluetooth === "ON"){
+        //   toast.success("BlueTooth đang mở")
+        //   setIsOn(true)
+        //   scanBluetoothDevices()      
+        // }
+        // else{
+
+        //   setIsOn(false)  
+        //   toast.success("BlueTooth đang tắt")
+        // }
+
+        // if(isOnBuzzer){     
         //   toast.success("Còi đã được bật thành công")
         //   setIsOnBuzzer(true)
             
-        // }
-        // else{
-        //   setIsOnBuzzer(false)  
+        // }  
+        // else{  
+        //   setIsOnBuzzer(false)   
         //   toast.success("Còi đã được tắt thành công")
-        // }
+        // }  
 
         setIsLoading(false); // Kết thúc loading sau khi lấy dữ liệu xong
       }
@@ -154,20 +149,20 @@ function Detail() {
         try {
           const response = await axios.get(`${url}/GPSObject/GetObjectByPhoneNumber?phoneNumber=${phone}`);    
           const DevicesData = response.data; 
-          console.log(DevicesData)   
+          ////console.log(DevicesData)   
           // Kiểm tra nếu dữ liệu nhận được hợp lệ
           if (DevicesData && DevicesData.length > 0) {      
             const Devices = DevicesData.find((item) => item.connected === true && item.gpsDeviceId === idDevice);
 
             if (Devices) {
-              console.log("Tìm thấy thiết bị:", Devices);
+              ////console.log("Tìm thấy thiết bị:", Devices);
             } else {
               const ConfirmdeleteDevice = window.confirm("Chú ý, bạn chưa tạo đối tượng kết nối với thiết bị theo dõi!!!");
               if (ConfirmdeleteDevice) {
                
                
               } else {
-                console.log("Action canceled.");
+                ////console.log("Action canceled.");
               }
             }
 
@@ -191,12 +186,7 @@ function Detail() {
          
     }, [phone])   
 
-    // useEffect(() => {  
-    //   if(listHistorBattery.length > 0){  
-    //     setIsdisplayChart(true)
-    //   }
-         
-    // }, [listHistorBattery]) 
+    
 
     
     useEffect(() => {  
@@ -220,16 +210,12 @@ function Detail() {
       return `${day}-${month}-${year} ${time}`;
     }
 
+    
+    
+
     const [fileName, setFileName] = useState("");
     
-    // const handleFileChange = (event) => {
-    //     const file = event.target.files[0];
-    //     if (file) {
-    //       setFileName(file.name);
-    //     } else {
-    //       setFileName("");
-    //     }
-    // };
+    
 
 
     const sortByTimestamp = (data) => {
@@ -253,7 +239,7 @@ function Detail() {
             const sortedData = sortByTimestamp(PositionDeviceData);
 
             setListHistorBattery(sortedData); 
-            console.log('PositionDeviceData', PositionDeviceData);         
+            ////console.log('PositionDeviceData', PositionDeviceData);         
             success = true; 
             toast.success("Đã lấy được mức pin")  
           } else {
@@ -344,7 +330,7 @@ const handleScanAndShow = async () => {
 
     const callAPIUpdateObjecEmergencytById = async (StatusEmergency) => {
 
-      console.log('StatusEmergency', StatusEmergency)
+      ////console.log('StatusEmergency', StatusEmergency)
       let success = false;
       while (!success) {   
         try {
@@ -365,7 +351,7 @@ const handleScanAndShow = async () => {
           );
 
           const ObjectData = response.data;
-          console.log(response.data)
+          ////console.log(response.data)
           if (ObjectData === 'Update successfully!') { 
             toast.success(`Trạng thái cảnh báo là ${StatusEmergency ? "Khẩn cấp" : "Bình thường"}`);
             success = true;
@@ -399,7 +385,7 @@ const handleScanAndShow = async () => {
           );
 
           const ObjectData = response.data;
-          console.log(response.data)
+          //console.log(response.data)
           if (ObjectData === 'Update successfully!') { 
             toast.success(`Thời gian báo thức là ${timeObject} hàng ngày`);
             success = true;
@@ -426,7 +412,7 @@ const handleScanAndShow = async () => {
         firstRender.current = false; // Đánh dấu lần đầu đã render
         return; // Ngăn không chạy lần đầu
       }
-      console.log("Đã chọn xong giờ:", time);
+      //console.log("Đã chọn xong giờ:", time);
       // Có thể gọi API hoặc xử lý dữ liệu tại đây
     }, [time]); // Chạy khi `time` thay đổi, nhưng bỏ qua lần đầu tiên
 
@@ -545,6 +531,54 @@ const CustomTooltip = ({ active, payload }) => {
       }
     };
 
+    function getBuzzerStatus(dataArray, loggerId) {
+
+      if(loggerId !== ""){
+        if(dataArray.length > 0){ 
+          const buzzerEntry = dataArray.find(
+            item => item.LoggerId === loggerId && item.Name === "Buzzer" 
+          );
+          const bluetoothEntry = dataArray.find(
+            item => item.LoggerId === loggerId && item.Name === "Bluetooth" 
+          );
+  
+          // console.log("id", loggerId )  
+          // console.log("dataArray", dataArray )  
+          // console.log("buzzerEntry", buzzerEntry ) 
+          
+          if(buzzerEntry){
+            if(buzzerEntry.Value === "ON"){
+              setIsOnBuzzer(true)
+              toast.success("Còi đang mở")
+            }
+            if(buzzerEntry.Value === "OFF"){
+              setIsOnBuzzer(false)
+              toast.success("Còi đang đóng")
+            }
+          }
+
+          if(bluetoothEntry){
+            if(bluetoothEntry.Value === "ON"){
+              setIsOn(true)
+              toast.success("Bluetooth đang mở")   
+            }  
+            if(bluetoothEntry.Value === "OFF"){  
+              setIsOn(false)
+              toast.success("Bluetooth đang đóng")           
+            }
+          }
+    
+          
+
+          
+        }   
+      }
+    }
+
+    useEffect(()=>{
+      getBuzzerStatus(buffer, idDevice)
+    },[buffer, idDevice])
+
 
 
     useEffect( () => {
@@ -553,14 +587,63 @@ const CustomTooltip = ({ active, payload }) => {
           .withUrl("https://mygps.runasp.net/NotificationHub")   
           .withAutomaticReconnect()    
           .build(); 
-    
-         
-                
+
               // Bắt đầu kết nối   
               connection.start()   
                   .then(() => {  
-                    console.log("✅ Kết nối SignalR Position Device thành công!");     
-                               // Lắng nghe các sự kiện cho từng thiết bị
+                    console.log("✅ Kết nối SignalR Position Device thành công!"); 
+
+                    connection.invoke("SendAllAsync")
+                    .catch(err => console.error("Error invoking SendAllAsync:", err));
+
+                    connection.on(`SendAll`, data => {   
+                            const obj = JSON.parse(data);
+                            //console.log(`📡 Get buffer:`, obj);
+                            if(ObjectIsConnect.id !== ""){
+                              setBuffer(obj)        
+                            }  
+                                                                   
+                    });
+
+                    connection.on(`Bluetooth`, data => {
+                      const obj = JSON.parse(data);
+                      console.log(`📡 Get Bluetooth:`, obj);
+
+                      if(ObjectIsConnect.id !== ""){
+                        if(obj.Value === "ON"){
+                          setIsOn(true)
+                          
+                          toast.success("Bluetooth đang mở")
+                        }
+                        if(obj.Value === "OFF"){
+                          setIsOn(false)
+                          toast.success("Bluetooth đang đóng")
+                        } 
+
+                        settimestamp(convertDateTimeBefore(obj.Timestamp))  
+
+                          // setDevice(prev => ({
+                          //   ...prev,
+                          //   timeStamp: (obj.Timestamp)
+                          // }));
+                        }                                          
+                    });
+
+
+                    connection.on(`Buzzer`, data => {
+                      const obj = JSON.parse(data);
+                      console.log(`📡 Get Buzzer:`, obj);     
+                      if(ObjectIsConnect.id !== ""){
+                        if(obj.Value === "ON"){   
+                          setIsOnBuzzer(true)
+                          toast.success("Còi đang mở")   
+                        }
+                        if(obj.Value === "OFF"){   
+                          setIsOnBuzzer(false)  
+                          toast.success("Còi đang đóng")
+                        }
+                      }                    
+                     });
                   })
                   .catch(err => {
                       console.error('Kết nối thất bại: ', err);
@@ -574,23 +657,13 @@ const CustomTooltip = ({ active, payload }) => {
                   console.warn('Kết nối đang được thử lại...', error);
               });
 
-
-          connection.on(`SendNotification${Device.id}`, data => {
-            const obj = JSON.parse(data);
-            console.log(`📡 Dữ liệu từ thiết bị ${Device.id}:`, obj);
-             // Đợi 2 giây trước khi gọi getNotification
-             setTimeout(() => {
-              getDeviceById()
-          }, 3000);
-          });
-          
           // Cleanup khi component unmount hoặc khi Device thay đổi
         return () => {
           console.log("🔴 Ngắt kết nối SignalR...");
           connection.stop();
         };
     
-        }, [Device] )
+        }, [Device, idDevice] )    
 
 
 
@@ -684,7 +757,8 @@ return (
                             
                           <div className='informationDeviceItemSecond'>
                                 <div className='informationDeviceItemSecondText'>
-                                      {convertDateTimeBefore(Device.timeStamp) !== '01-01-2025 00:00:00' ? `${convertDateTimeBefore(Device.timeStamp)}` : `Chưa được cập nhật`}
+                                      {/* {convertDateTimeBefore(Device.timeStamp) !== '01-01-2025 00:00:00' ? `${convertDateTimeBefore(Device.timeStamp)}` : `Chưa được cập nhật`} */}
+                                      {timestamp !== '01-01-2025 00:00:00' ? `${timestamp}` : `Chưa được cập nhật`}
                                 </div>                                
                           </div>                      
 

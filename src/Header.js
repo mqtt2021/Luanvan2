@@ -380,7 +380,7 @@ function Header() {
             };
         }, [listAllDeices]);
 
-  console.log('UserName', UserName)
+  
   return (    
     <div className='header font-barlow'>  
 

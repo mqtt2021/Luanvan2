@@ -544,13 +544,13 @@ function PositionObject() {
                                       zIndexOffset={ 1000 } 
                                                                   
                                   >
-                                    <Popup>   
+                                    {/* <Popup>   
                                         <div className='div-popup'>
-                                        {/* <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(begin.timestamp) : convertDateTimeAfter(begin.timestamp)}</div>                                                                 */}
+                                        <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(begin.timestamp) : convertDateTimeAfter(begin.timestamp)}</div>                                                                
                                         
                                         
                                         </div>                                                                             
-                                    </Popup>    
+                                    </Popup>     */}
                                 </Marker>
                                
                                 {/* {displayRoutes && 

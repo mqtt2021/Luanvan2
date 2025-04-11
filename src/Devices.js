@@ -89,13 +89,10 @@ function Devices() {
     }
   },[Device]) 
 
-
-
-
   const handleCloseModalAddDeice = () => {
         setshowModalAddDevice(false)  
-        CallAPIGetDeviceById()
-        // getAllDevices()
+        //CallAPIGetDeviceById()
+         getAllDevices()
   } 
 
   const getAllDevices = async () => {   

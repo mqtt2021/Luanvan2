@@ -133,7 +133,7 @@ function Login() {
                   </div>
                 <div class="wrapperLogin">
                   
-                  <div class="titleLogin"><span>Xí Nghiệp Truyền Dẫn Nước Sạch</span></div>  
+                  <div class="titleLogin"><span>Đăng nhập tài khoản</span></div>  
                   <div className='formLogin'>
                     <div class="rowLogin">
                       <i class="fas fa-user">

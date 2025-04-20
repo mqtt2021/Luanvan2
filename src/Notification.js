@@ -1,20 +1,9 @@
 import React,{useState, useEffect, useContext} from 'react'
-import { RiGpsFill } from "react-icons/ri";
-import { TiBatteryCharge } from "react-icons/ti";
 import './Notification.scss'
-import { GiPositionMarker } from "react-icons/gi";
-import { FaBell } from "react-icons/fa";
-import { IoMdSettings } from "react-icons/io";
-import { IoMdAddCircle } from "react-icons/io";
-import {Link, useNavigate} from "react-router-dom";   
-import ModalAddDevice from './settingDevice/AddDevice';
+import {Link} from "react-router-dom";   
 import { MdDirectionsRun } from "react-icons/md";
 import { FaCircle } from "react-icons/fa";
-import { IoIosWarning } from "react-icons/io";
-import { FaConnectdevelop } from "react-icons/fa";
-import { FiWifi } from "react-icons/fi";
-import { FiWifiOff } from "react-icons/fi";   
-import { MdBrowserUpdated } from "react-icons/md";     
+import { IoIosWarning } from "react-icons/io";    
 import { PiBatteryWarningFill } from "react-icons/pi";
 import axios from 'axios';
 import { url } from './services/UserService';
@@ -22,23 +11,18 @@ import { UserContext } from './usercontext';
 import { GrUpdate } from "react-icons/gr";
 import * as signalR from "@microsoft/signalr";
 import { MdError } from "react-icons/md";
-
+import { BsCheckAll } from "react-icons/bs";
+import { toast } from 'react-toastify';
 function Notification() { 
 
-
   const { unreadCount, setUnreadCount, listNotifications, setListNotifications  } =  useContext(UserContext);    
-
   const [connection, setConnection] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Thêm state để quản lý trạng thái loading
-  
   const [phone, setPhone] = useState('');
   const [showModalAddDevice, setshowModalAddDevice] = useState(false);
-
   const [listAllDeices, setListAllDeices] = useState([]);   
-
   const [notificationSignalR, setnotificationSignalR] = useState([]);
                                        
-
   const handleshowModalAddDevice = () => {   
         setshowModalAddDevice(true)       
   }
@@ -112,6 +96,36 @@ function Notification() {
     }
     
   };
+
+
+  const CallAPICheckAll = async () => {   
+      let success = false;
+      while (!success) {
+        try {
+          const phoneNumer = sessionStorage.getItem('phoneNumer');    
+          const response = await axios.patch(`${url}/Notification/AcknowledgeAll?phoneNumber=${phoneNumer}`);  
+          const LoggerData = response.data;
+    
+          // Kiểm tra nếu dữ liệu nhận được hợp lệ            
+          if (LoggerData === "Acknowledge successfully.") {
+            success = true;                   
+            // Gọi lại hàm getNotification sau khi cập nhật thành công
+            toast.success("Đã xem tất cả thông báo")
+            await getNotification();
+          }
+          // Kiểm tra nếu dữ liệu nhận được hợp lệ            
+          if (LoggerData === "AcknowledgeAll failed!") {
+            success = true;                   
+            // Gọi lại hàm getNotification sau khi cập nhật thành công
+            toast.success("Tất cả thông báo đã được xem")
+          }
+          
+        } catch (error) {
+          console.error('getAllDevices error, retrying...', error);  
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 1 giây trước khi thử lại
+        }
+      }
+  };    
   
 
 
@@ -196,7 +210,13 @@ function Notification() {
   function convertDateTimeBefore(inputString) {
     const [date, time] = inputString.split('T');    
     const [year, month, day] = date.split('-');
-    return `${day}-${month}-${year} ${time}`;    
+    return `${day}-${month}-${year} ${time}`;       
+  }
+
+  function handleCheckAllNotification() {
+      setIsLoading(true); // Bắt đầu loading
+      CallAPICheckAll()
+      setIsLoading(false); // Bắt đầu loading
   }
 
   const iconMap = {
@@ -372,6 +392,12 @@ function Notification() {
             <div className='TitleNotification'>
                     <div className='TitleNotificationItem'>
                           Thông báo
+                    </div> 
+                    <div 
+                        className='divIconCheckAll'
+                        onClick={handleCheckAllNotification}
+                    >
+                          <BsCheckAll className='iconCheckAll'/>
                     </div> 
             </div>
 

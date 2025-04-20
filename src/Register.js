@@ -78,7 +78,7 @@ function Register() {
           }
           const checkName = ListAllCustomer.find((item) => item.userName === userName);
           if(checkName){  
-            toast.error('Tên đã được dùng')  
+            toast.error('Tên đăng nhập đã tồn tại')  
             return
           }
      
@@ -176,7 +176,7 @@ function Register() {
                           <FaUser/>    
                       </i>
                       <input 
-                            type="text" placeholder="Tên người dùng" 
+                            type="text" placeholder="Tên đăng nhập" 
                             value={userName}
                             onChange={(e)=>setuserName(e.target.value)}
                       />

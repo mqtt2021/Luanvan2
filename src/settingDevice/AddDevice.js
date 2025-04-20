@@ -135,7 +135,6 @@ function ModalAddDevice({ show , handleClose}) {
 
                    const checkidValid = listAllDevices.find((item) => item.id === idDevice);
                   
-
                    if(checkidValid){
                     
                    }

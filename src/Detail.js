@@ -89,17 +89,9 @@ function Detail() {
       }
     };
 
-
-
-    const isFirstRender = useRef(true);
     useEffect(() => {  
 
       if(Device.id !== ''){
-
-        // if (isFirstRender.current) {
-        //   isFirstRender.current = false;
-        //   return; // Ngăn chạy lần đầu
-        // }
 
         setImage(Device.imagePath)
 
@@ -113,31 +105,6 @@ function Detail() {
         else{
           setIsEmergency(false)
         }
-
-
-
-
-        // if(Device.bluetooth === "ON"){
-        //   toast.success("BlueTooth đang mở")
-        //   setIsOn(true)
-        //   scanBluetoothDevices()      
-        // }
-        // else{
-
-        //   setIsOn(false)  
-        //   toast.success("BlueTooth đang tắt")
-        // }
-
-        // if(isOnBuzzer){     
-        //   toast.success("Còi đã được bật thành công")
-        //   setIsOnBuzzer(true)
-            
-        // }  
-        // else{  
-        //   setIsOnBuzzer(false)   
-        //   toast.success("Còi đã được tắt thành công")
-        // }  
-
         setIsLoading(false); // Kết thúc loading sau khi lấy dữ liệu xong
       }
       
@@ -936,18 +903,7 @@ return (
                 
                 </div>    
                 
-                {/* <div className="w-full h-[400px]">
-                  
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={formattedData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="time" />
-                      <YAxis domain={[0, 100]} tickFormatter={(tick) => `${tick}%`} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} dot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div> */}
+               
     
 
                 <div className="w-full h-[400px]">

@@ -11,6 +11,7 @@ import { ToastContainer } from 'react-toastify';
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
 import './Map.scss'   
+import {Link, useNavigate} from "react-router-dom";
 import useGeoLocation from "./useGeoLocation"
 import {  toast } from 'react-toastify';
 import ModelConfirm from './ModelConfirm';
@@ -23,7 +24,7 @@ function Map() {
           makerOpenPopup, pressPositionWarning,    
           setChangeNameFromMapToHeader, setMakerOpenPopup,     
           pressPercentBattery, setgetLoggerStolen, displayNav, setDisplayNav, displayRoutesTwoPoint, setDisplayRoutesTwoPoint,
-          isButtonDisabled, setIsButtonDisabled , accessRouteRegister, listAllDevices,setlistAllDevices,
+          isButtonDisabled, setIsButtonDisabled , accessRouteRegister, listAllDevices, setlistAllDevices,
           inforCustomer, setInforCustomer, phoneNumberCustomer, setPhoneNumberCustomer, listObject, setlistObject    
         } =  useContext(UserContext);           
   //const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
@@ -112,7 +113,7 @@ function Map() {
           const phoneNumer = sessionStorage.getItem('phoneNumer');
           const listDevice = DevicesData.filter((item) => item.customerPhoneNumber === phoneNumer);
           const listDeviceStolen = listDevice.filter((item) => item.stolen === true);
-          console.log(listDevice)  
+          console.log('listDevice',listDevice)      
 
           setlistDevicesStolen(listDeviceStolen)  
 
@@ -154,26 +155,28 @@ function Map() {
     }
   };
 
-  const getAllObject = async () => {   
-    let success = false;
-    while (!success) {
-      try {
-        const response = await axios.get(`${url}/GPSObject/GetObjectByPhoneNumber?phoneNumber=${phoneNumberCustomer}`);    
-        const ObjectsData = response.data; 
-        //console.log(ObjectsData)   
-        // Kiểm tra nếu dữ liệu nhận được hợp lệ
-        if (ObjectsData && ObjectsData.length > 0) {      
-          const Objects = ObjectsData.filter((item) => item.connected === true);
-          setlistObject(Objects);         
-          success = true; 
-        } else {
-        }
-      } catch (error) {
-        toast.error("Lỗi khi lấy thông tin đối tượng") 
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
-      }
-    }
-  };
+
+  
+  // const getAllObject = async () => {      
+  //   let success = false;
+  //   while (!success) {
+  //     try {
+  //       const response = await axios.get(`${url}/GPSObject/GetObjectByPhoneNumber?phoneNumber=${phoneNumberCustomer}`);    
+  //       const ObjectsData = response.data; 
+  //       //console.log(ObjectsData)   
+  //       // Kiểm tra nếu dữ liệu nhận được hợp lệ
+  //       if (ObjectsData && ObjectsData.length > 0) {      
+  //         const Objects = ObjectsData.filter((item) => item.connected === true);
+  //         setlistObject(Objects);         
+  //         success = true; 
+  //       } else {
+  //       }
+  //     } catch (error) {
+  //       toast.error("Lỗi khi lấy thông tin đối tượng") 
+  //       await new Promise(resolve => setTimeout(resolve, 1000)); // Đợi 2 giây trước khi thử lại
+  //     }
+  //   }
+  // };
 
 
 useEffect(() => {
@@ -183,11 +186,11 @@ useEffect(() => {
   getInforCustomer();
 }, []);  
 
-useEffect(() => {
-  if(phoneNumberCustomer !== ''){
-      getAllObject();
-  }
-}, [phoneNumberCustomer]);
+// useEffect(() => {
+//   if(phoneNumberCustomer !== ''){
+//       getAllObject();
+//   }
+// }, [phoneNumberCustomer]);
 
 
 // useEffect(() => {  
@@ -471,6 +474,7 @@ function convertDateTime(inputString) {
       }
     }
     if(listAllDevices.length > 0){
+        setIsMapLoading(false);  
         const firstDeviceId = listAllDevices[0].id; // Lấy id của thiết bị đầu tiên
         if (deviceAddresses[firstDeviceId] !== undefined) {      
             setIsHaveDeviceAddresses(true);
@@ -482,35 +486,35 @@ function convertDateTime(inputString) {
    
                                                                                                                                              
    
-  useEffect(() => {
+  // useEffect(() => {   
 
-    if(listAllDevices.length > 0){
-      const fetchAddresses = async () => {
-        let newAddresses = {};
+  //   if(listAllDevices.length > 0){
+  //     const fetchAddresses = async () => {
+  //       let newAddresses = {};
   
-        for (const device of listAllDevices) {
-          try {
-            const response = await axios.get(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${device.latitude}&lon=${device.longitude}`
-            );
-            newAddresses[device.id] = response.data.display_name || "Không tìm thấy địa chỉ";
-          } catch (error) {
-            console.error("Lỗi khi lấy địa chỉ:", error);
-            newAddresses[device.id] = "Không thể lấy địa chỉ";
-          }
-        }
+  //       for (const device of listAllDevices) {
+  //         try {
+  //           const response = await axios.get(
+  //             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${device.latitude}&lon=${device.longitude}`
+  //           );
+  //           newAddresses[device.id] = response.data.display_name || "Không tìm thấy địa chỉ";
+  //         } catch (error) {
+  //           console.error("Lỗi khi lấy địa chỉ:", error);
+  //           newAddresses[device.id] = "Không thể lấy địa chỉ";
+  //         }
+  //       }
   
-        setDeviceAddresses(newAddresses);
-      };
+  //       setDeviceAddresses(newAddresses);
+  //     };
   
-      if (listAllDevices.length > 0) {
-        fetchAddresses();
-      }
-    }
+  //     if (listAllDevices.length > 0) {
+  //       fetchAddresses();
+  //     }
+  //   }
 
-    setIsDisplayPosition(true)
+  //   setIsDisplayPosition(true)
    
-  }, [listAllDevices]); // Chỉ chạy khi listAllDevices thay đổi
+  // }, [listAllDevices]); // Chỉ chạy khi listAllDevices thay đổi
 
   const removePostalCode = (address) => {
 
@@ -532,6 +536,13 @@ function convertDateTime(inputString) {
 
     // Ghép lại chuỗi sau khi lọc
     return parts.join(", ");
+}
+
+
+function convertDateTimeBefore(inputString) {
+  const [date, time] = inputString.split('T');    
+  const [year, month, day] = date.split('-');
+  return `${day}-${month}-${year} ${time}`;
 }
 
 
@@ -582,154 +593,6 @@ function convertDateTime(inputString) {
                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"                            
                         />
                         <MyClickHandlerGetLocation onClick={handleMapClickGetLocation}/>                                                       
-              
-                            {/* {isDisplayMakerOpenPopup && <Marker 
-                                      className = 'maker'
-                                      position = {[makerOpenPopup.latitude, makerOpenPopup.longtitude]}
-                                      icon= { warning2 }   
-                                      zIndexOffset = {3000}
-                                      ref = {markerRef}                                                                
-                                  >
-                                     <Popup  >
-                                        <div className='div-popup'>
-                                          <div className='infor'>
-                                            <div className ='inforItem'>   
-                                                <div className='title'>Tên:</div>
-                                                                                               
-                                                <div className='value'>{listLoggerStolen.find((item,index) => item.id === makerOpenPopup.id ).name}</div>
-                                            </div>    
-                                            <div className ='inforItem'>
-                                                <div className='title'>Mức pin:</div>
-                                                <div className='value'>{`${makerOpenPopup.battery}%`}</div>
-                                            </div> 
-                                            <div className ='inforItem'>
-                                                <div className='title'>Kinh độ:</div>
-                                                <div className='value'>{Math.round(makerOpenPopup.latitude * 10000) / 10000}</div>
-                                            </div>  
-                                            <div className ='inforItem'>
-                                                <div className='title'>Vĩ độ:</div>
-                                                <div className='value'>{Math.round(makerOpenPopup.longtitude * 10000) / 10000}</div>
-                                            </div>
-                                            <div className ='inforItem'>
-                                                <div className='title'>Nhiệt độ:</div>
-                                                <div className='value'>{`${makerOpenPopup.temperature} độ C`}</div>
-                                            </div>
-                                            <div className ='inforItem'>
-                                                <div className='title'>Thời điểm gần nhất:</div>
-                                                <div className='value'>{convertDateTime(makerOpenPopup.timeStamp)}</div>      
-                                            </div>
-                                           
-                                          </div>
-                                              
-                                                                                                 
-                                            <div className='button'>
-                                              <button type="button" class="btn btn-primary" data-mdb-ripple-init
-                                                     onClick={()=>handleshowModalChangeName(listLoggerStolen.find((item,index) => item.id === makerOpenPopup.id ))}
-                                              >Đổi tên</button>
-                                            </div>                                  
-                                        </div>                                                                             
-                                    </Popup>     
-                                </Marker>} */}
-                                
-                                
-                                {/* {listAllLogger.map((item,index)=>(  
-                                  <Marker 
-                                      className='maker'
-                                      position={[item.latitude , item.longtitude]}
-                                      icon= { wakeup } 
-                                      key={index}                               
-                                  >
-                                     <Popup  >
-                                        <div className='div-popup'>
-                                          <div className='infor'>
-                                            <div className ='inforItem'>   
-                                                <div className='title'>Tên:</div>
-                                                <div className='value'>{item.name}</div>
-                                            </div>    
-                                            <div className ='inforItem'>
-                                                <div className='title'>Mức pin:</div>
-                                                <div className='value'>{`${item.battery}%`}</div>
-                                            </div> 
-                                            <div className ='inforItem'>
-                                                <div className='title'>Kinh độ:</div>
-                                                <div className='value'>{Math.round(item.latitude * 10000) / 10000}</div>
-                                            </div>  
-                                            <div className ='inforItem'>
-                                                <div className='title'>Vĩ độ:</div>
-                                                <div className='value'>{Math.round(item.longtitude * 10000) / 10000}</div>
-                                            </div>
-                                            <div className ='inforItem'>
-                                                <div className='title'>Nhiệt độ:</div>
-                                                <div className='value'>{`${item.temperature} độ C`}</div>
-                                            </div>
-                                            <div className ='inforItem'>
-                                                <div className='title'>Thời điểm gần nhất:</div>
-                                                <div className='value'>{convertDateTime(item.timeStamp)}</div>      
-                                            </div>
-                                           
-                                          </div>
-                                              
-                                                                                                 
-                                            <div className='button'>
-                                              <button type="button" class="btn btn-primary" data-mdb-ripple-init
-                                                     onClick={()=>handleshowModalChangeName(item)}
-                                              >Đổi tên</button>
-                                            </div>                                  
-                                        </div>                                                                             
-                                    </Popup>     
-                                </Marker>
-                                ))} */}
-
-                                {/* {listLoggerStolen.length > 0 && listLoggerStolen.map((item,index)=>(
-                                  <Marker 
-                                      className='maker'    
-                                      position={[item.latitude , item.longtitude]}
-                                      icon= { warning }   
-                                      key={index}  
-                                      zIndexOffset={  1000 }                  
-                                  >
-                                    <Popup>
-                                        <div className='div-popup'>
-                                          <div className='infor'>
-                                            <div className ='inforItem'>   
-                                                <div className='title'>Tên:</div>
-                                                <div className='value'>{item.name}</div>
-                                            </div>    
-                                            <div className ='inforItem'>
-                                                <div className='title'>Mức pin:</div>
-                                                <div className='value'>{`${item.battery}%`}</div>
-                                            </div> 
-                                            <div className ='inforItem'>
-                                                <div className='title'>Kinh độ:</div>
-                                                <div className='value'>{Math.round(item.latitude * 10000) / 10000}</div>
-                                            </div>  
-                                            <div className ='inforItem'>
-                                                <div className='title'>Vĩ độ:</div>
-                                                <div className='value'>{Math.round(item.longtitude * 10000) / 10000}</div>
-                                            </div>
-                                            <div className ='inforItem'>
-                                                <div className='title'>Nhiệt độ:</div>
-                                                <div className='value'>{`${item.temperature} độ C`}</div>
-                                            </div>
-                                            <div className ='inforItem'>
-                                                <div className='title'>Thời điểm gần nhất:</div>
-                                                <div className='value'>{convertDateTime(item.timeStamp)}</div>    
-                                            </div>          
-                                              
-                                          </div>
-                                              
-                                                                                                 
-                                            <div className='button'>
-                                              <button type="button" class="btn btn-primary" data-mdb-ripple-init
-                                                     onClick={()=>handleshowModalChangeName(item)}
-                                              >Đổi tên</button>
-                                            </div>                                  
-                                        </div>                                                                             
-                                    </Popup>      
-                                </Marker>
-                                ))} */}
-                          
-                               
                                 
                                 {/* {isShowPositionUser && 
                                   <Marker  
@@ -769,12 +632,12 @@ function convertDateTime(inputString) {
                                        <Popup>
                                         <div className='div-popup'>
                                           <div className='infor'>
-                                            <div className ='inforItem'>   
+                                            {/* <div className ='inforItem'>   
                                                 <div className='title'>Đối tượng được theo dõi:</div>
                                                 <div className='value'>
                                                       {listObject.find(device => device.gpsDeviceId === item.id )?.name ?? "Chưa có"}
                                                 </div>
-                                            </div> 
+                                            </div>  */}
                                             <div className ='inforItem'>   
                                                 <div className='title'>Thiết bị theo dõi:</div>               
                                                 <div className='value'>{item.name}</div>
@@ -787,13 +650,26 @@ function convertDateTime(inputString) {
                                                 </div>
                                             </div> 
                                             <div className ='inforItem'>
+                                                <div className='title'>Cập nhật gần nhất:</div>
+                                                <div className='value'>
+                                                  <div className='value'>{convertDateTimeBefore(item.timeStamp)}</div>   
+                                                </div>
+                                            </div> 
+                                            <div className ='inforItem ItemButton'>
+                                            
+                                                    <Link to={`/Devices/Setting/${item.id}/Detail`}>
+                                                        <button className="btn btn-primary">Thông tin chi tiết</button>
+                                                    </Link>
+                                            </div> 
+
+                                            {/* <div className ='inforItem'>
                                                 <div className='title'>Vị trí hiện tại:</div>
                                                 <div className='value'>
                                                   <div className='value'>
                                                         <div className="value">{isHaveDeviceAddresses ? cleanAddress(deviceAddresses[item.id]) : "Đang tải..."}</div>
                                                   </div>     
                                                 </div>
-                                            </div> 
+                                            </div>  */}
 
 
 
@@ -823,12 +699,12 @@ function convertDateTime(inputString) {
                                       <Popup>
                                        <div className='div-popup'>
                                          <div className='infor'>
-                                           <div className ='inforItem'>   
+                                           {/* <div className ='inforItem'>   
                                                <div className='title'>Đối tượng được theo dõi:</div>
                                                <div className='value'>
                                                      {listObject.find(device => device.gpsDeviceId === item.id )?.name ?? "Không tìm thấy thiết bị"}
                                                </div>
-                                           </div> 
+                                           </div>  */}
                                            <div className ='inforItem'>   
                                                <div className='title'>Thiết bị theo dõi:</div>
                                                <div className='value'>{item.name}</div>
@@ -840,14 +716,14 @@ function convertDateTime(inputString) {
                                                  <div className='value'>{item.battery} %</div>   
                                                </div>
                                            </div> 
-                                           <div className ='inforItem'>
+                                           {/* <div className ='inforItem'>
                                                <div className='title'>Vị trí hiện tại:</div>
                                                <div className='value'>
                                                  <div className='value'>   
                                                        <div className="value">{isHaveDeviceAddresses ? cleanAddress(deviceAddresses[item.id]) : "Đang tải..."}</div>
                                                  </div>      
                                                </div>
-                                           </div> 
+                                           </div>  */}
 
 
 

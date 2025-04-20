@@ -2,12 +2,11 @@ import React, { useEffect, useState,useRef, useContext } from 'react'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import {  toast } from 'react-toastify';
-import { HiOutlinePhotograph } from "react-icons/hi";
 import './Connect.scss'
-import { MdPhotoCamera } from "react-icons/md";
 import axios from 'axios';
 import { url } from './services/UserService';
 import { UserContext } from './usercontext';
+
 function Connect({ show , handleClose }) {          
   const { idObjectConnect, setidObjectConnect } = useContext(UserContext);  
   const [fileName, setFileName] = useState("");

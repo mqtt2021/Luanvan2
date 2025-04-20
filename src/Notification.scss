@@ -39,23 +39,46 @@
           
          
         .TitleNotification{
+            
             height: 8%;
             min-height: 60px; /* Đảm bảo tối thiểu 60px */
             width: 67%;
-            background-color: #ee4f11;    
+            background-color: #ee4f11;
             display: flex;
-            justify-content: center;
+            justify-content: space-between; /* Chia khoảng cách giữa text và icon */
             align-items: center;
             position: fixed;
-            top: 0px;  
-            
-           
+            top: 0px;
             z-index: 10; /* Đảm bảo nó nổi lên trên */
+            padding: 0px 15px 0px 15px;
+
             .TitleNotificationItem{
+                 
                 text-align: center;
                 color: #fff;
                 font-size: 30px;
-                font-weight: 600;    
+                font-weight: 600;
+                flex-grow: 1; /* Đảm bảo text chiếm hết không gian còn lại */ 
+            }
+            .divIconCheckAll{
+                
+                position: relative;
+                float: right; /* Đẩy icon về phía bên phải */
+                .iconCheckAll{
+                        font-size: 40px;
+                        font-weight: 600;
+                        color: #000000;
+                        &:hover{     
+                    
+                            color: #c6c6c6;
+          
+              
+                          }
+                }
+
+                cursor: pointer;
+                
+
             }
         }
 
@@ -218,21 +241,44 @@
 
         .TitleNotification{       
             height: 10%;    
-            width: 50%; 
+            width: 80%; 
             position: fixed;             
             top: 0px;       
-            right: 25%; 
+            right: 3%; 
             background-color: transparent;  
-            
-            z-index: 5000;       
+            z-index: 5000;         
             display: flex;   
-            justify-content: center;
-            align-items: center;   
+            justify-content: space-between; /* Chia khoảng cách giữa text và icon */
+            align-items: center;
+            
+            padding-left: 0px;
             .TitleNotificationItem{           
               text-align: center;
               color: #000000;
               font-size: 25px;
-              font-weight: 600;                                       
+              font-weight: 600;  
+              flex-grow: 1; /* Đảm bảo text chiếm hết không gian còn lại */                                      
+            }
+
+            .divIconCheckAll{
+                
+                position: relative;
+                float: right; /* Đẩy icon về phía bên phải */
+                .iconCheckAll{
+                        font-size: 40px;
+                        font-weight: 600;
+                        color: #000000;
+                        &:hover{     
+                    
+                            color: #c6c6c6;
+          
+              
+                          }
+                }
+
+                cursor: pointer;
+                
+
             }
         }
     }

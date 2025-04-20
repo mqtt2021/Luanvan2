@@ -21,7 +21,6 @@ const OTP = () => {
   const [canResendOTP, setCanResendOTP] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
 
-
   // function onCaptchVerify() {
   //   if (!window.recaptchaVerifier) {
   //     window.recaptchaVerifier = new RecaptchaVerifier(

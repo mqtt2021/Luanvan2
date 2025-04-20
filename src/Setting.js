@@ -238,7 +238,7 @@ function Setting() {
 
 
     const handleDeleteDevice=() => {
-      const ConfirmdeleteDevice = window.confirm("Bạn có chắc muốn xóa thiết bị này không?");
+      const ConfirmdeleteDevice = window.confirm("Bạn có chắc chắn muốn xóa thiết bị này không?");
       if (ConfirmdeleteDevice) {
         CallAPIDeleteDevice()
        
@@ -350,10 +350,10 @@ function Setting() {
                                     <div>
                                         Thông tin thiết bị  
                                     </div>
-                            </div>
+                            </div>  
                           </Link>
                      </div>
-                     <div className='divSettingSecond'>
+                     {/* <div className='divSettingSecond'>
                             <Link  to="/Devices/Setting/1/ObjectTraking">   
                                 <div    
                                         className='SettingSecondItem'
@@ -367,7 +367,7 @@ function Setting() {
                                     </div>
                                 </div> 
                             </Link>    
-                     </div>
+                     </div> */}
 
                      
                      {/* <div className='divSettingSecond'>

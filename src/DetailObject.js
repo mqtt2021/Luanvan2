@@ -1,16 +1,7 @@
 import React,{useState, useEffect, useRef  } from 'react'
-import DatePicker from 'react-datepicker';
 import './DetailObject.scss'
-import Table from 'react-bootstrap/Table';
-import ModalUpdateFirmware from './settingDevice/Firmware';
 import {Link, useNavigate} from "react-router-dom";
-import imgDevice from './asset/images/Device.jpg'  
-import { FaFile } from "react-icons/fa";
 import { MdDriveFileRenameOutline } from "react-icons/md";
-import { HiIdentification } from "react-icons/hi2";   
-import { IoIosTime } from "react-icons/io";
-import { PiBatteryWarningFill } from "react-icons/pi";
-import { FaFileArchive } from "react-icons/fa";
 import { url } from './services/UserService';
 import { useParams } from 'react-router-dom';                 
 import axios from 'axios';
@@ -828,7 +819,7 @@ return (
                                                     
                                                     >
                                                            <div  className='butonDeleteObject' >
-                                                           Xóa đối tượng
+                                                              Xóa đối tượng
                                                            </div>
                                                            
                                                                 

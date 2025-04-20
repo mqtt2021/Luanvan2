@@ -2,7 +2,6 @@ import { Route,Routes } from 'react-router-dom';
 import React,{useContext,useEffect} from 'react'
 import Map from './Map';
 import History from './History';
-import Login from './Login';
 import './routes.scss'  
 import { UserContext } from './usercontext';
 import Devices from './Devices';
@@ -12,7 +11,6 @@ import ObjectTracking from './ObjectTracking';
 import AddObjectTracking from './AddObjectTracking';
 import Objects from './Objects';
 import InforObject from './InforObject';
-import Register from './Register';
 import PositionDevice from './PositionDevice';
 import HistoryDevice from './HistoryDevice ';
 import Notification from './Notification';

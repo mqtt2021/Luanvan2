@@ -5,11 +5,7 @@ import { editUser } from '../services/UserService';
 import {  toast } from 'react-toastify';
 
 function ModalUpdateFirmware({ show , handleClose}) {
-
-
-
   const [fileName, setFileName] = useState("");
-
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -18,7 +14,6 @@ function ModalUpdateFirmware({ show , handleClose}) {
       setFileName("");
     }
   };
-
 
   return (
     <div  className="modal show"

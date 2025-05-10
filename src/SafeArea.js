@@ -15,10 +15,12 @@ import { url } from './services/UserService';
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import useGeoLocation from "./useGeoLocation"
+import * as signalR from "@microsoft/signalr";
 
-function SafeArea() {                
+
+function SafeArea() {                   
   const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
-  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
+  const [isLocationEnabled, setIsLocationEnabled] = useState(false);    
     const PositionSafe = new L.Icon({ // vị trí GPS khi bị trộm đi qua
         iconUrl: require("./asset/images/maker_user.png" ),
         iconSize: [50,50],
@@ -35,8 +37,8 @@ function SafeArea() {
     const mapRef = useRef()
     const {id} = useParams(); // Lấy tham số động từ URL    
     const [Device, setDevice] = useState({id:'', latitude: 0 , longitude: 0 });
-    const timeoutRef = useRef(null);
-
+    const timeoutRef = useRef(null);   
+    const [DeviceMaker, setDeviceMaker] = useState({id:'', latitude: 0 , longitude: 0 });
     // useEffect(() => {
     //   if (!locationUser.loaded) {
     //     toast.warn("Vui lòng bật vị trí để tiếp tục.");
@@ -140,8 +142,10 @@ function SafeArea() {
               "SafeRadius": radius,  
               "CurrentTime": "0001-01-01T00:00:00",   
               "AlarmTime": Device.alarmTime,     
-              "BlueTooth": "OFF",                
-              "Buzzer": "OFF",    
+              "BlueTooth": Device.bluetooth,                
+              "Buzzer": "OFF",        
+              "Sleep": false,   
+              "Threshold": 50,     
               "Emergency": Device.emergency,
               "PhoneNumber": Device.customerPhoneNumber 
             }
@@ -301,6 +305,89 @@ function SafeArea() {
 
     }
 
+
+    function extractCoordinates(message) {
+      const match = message.match(/Longitude:\s*([\d.-]+);\s*Latitude:\s*([\d.-]+)/);
+      if (match) {
+
+        setDevice(pre => ({   
+          ...pre, // Giữ nguyên các giá trị cũ
+          latitude: parseFloat(match[2]), 
+          longitude: parseFloat(match[1])
+        }));  
+
+        setCenter({lat: parseFloat(match[2]),lng: parseFloat(match[1]) })
+        setZOOM_LEVEL(18)   
+      }
+    }
+
+
+     useEffect( () => {
+    
+          let connection = new signalR.HubConnectionBuilder()   
+          .withUrl("https://mygps.runasp.net/NotificationHub")       
+          .withAutomaticReconnect()    
+          .build(); 
+    
+              // Bắt đầu kết nối   
+              connection.start()   
+                  .then(() => {  
+                    console.log("✅ Kết nối SignalR Position Device thành công!");     
+                               // Lắng nghe các sự kiện cho từng thiết bị
+                  })
+                  .catch(err => {
+                      console.error('Kết nối thất bại: ', err);
+                  });
+              // Lắng nghe sự kiện kết nối lại
+              connection.onreconnected(connectionId => {
+                  console.log(`Kết nối lại thành công. Connection ID: ${connectionId}`);
+              });
+              // Lắng nghe sự kiện đang kết nối lại
+              connection.onreconnecting(error => {
+                  console.warn('Kết nối đang được thử lại...', error);
+              });
+        
+          
+    
+          connection.on(`SendNotification${Device.id}`, data => {
+            const obj = JSON.parse(data);
+            console.log(`📡 Dữ liệu từ thiết bị ${Device.id}:`, obj);
+             // Đợi 2 giây trước khi gọi getNotification
+    
+             extractCoordinates(obj.Description)          
+          });
+          
+          // Cleanup khi component unmount hoặc khi Device thay đổi
+        return () => {
+          console.log("🔴 Ngắt kết nối SignalR...");
+          connection.stop();
+        };
+    
+        }, [Device] )
+
+
+
+      const [address, setAddress] = useState("");
+      const getAddressFromCoordinates = async (lat, lon) => {
+      try {   
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+        );
+        const data = response.data;
+        setAddress(data.display_name || "Không tìm thấy địa chỉ");
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+        setAddress("Đang xác định vị trí");      
+      }    
+    };
+
+
+
+        useEffect(() => { 
+              setCenter({lat: DeviceMaker.latitude,lng: DeviceMaker.longitude })
+              getAddressFromCoordinates(DeviceMaker.latitude,  DeviceMaker.longitude );   
+            }, [DeviceMaker])
+
   
   console.log(Object)  
   console.log(Device)
@@ -324,6 +411,26 @@ function SafeArea() {
                           center={center} 
                           zoom={ZOOM_LEVEL}     
                           ref={mapRef}>
+
+                           {/* Div hiển thị trên bản đồ
+                          <div style={{
+                            position: "absolute",
+                            top: "10px",  
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            background: "rgba(255, 255, 255, 0.9)",
+                            padding: "10px 20px",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.3)",
+                            zIndex: 1000,
+                            fontWeight: "bold",
+                             width: "75%",  // Tự mở rộng theo nội dung
+                            textAlign: "center"
+                          }}>
+                            {Device.latitude > 0 ? `Vị trí: ${address}` : `Chưa ghi nhận vị trí`}
+                          </div> */}
+
+
                         <TileLayer
                              attribution ='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"                           
@@ -338,7 +445,16 @@ function SafeArea() {
                         />}
 
 
-                        {ObjectClick.latitude > 0 && (
+                            <Marker 
+                                    position={[Device.latitude , Device.longitude]}
+                                    icon= { PositionSafe } 
+                                    zIndexOffset={ 1000 }      
+                            >   
+                             
+                            </Marker>  
+
+
+                        {/* {ObjectClick.latitude > 0 && (
                             <Marker 
                                     position={[ObjectClick.latitude , ObjectClick.longitude]}
                                     icon= { PositionSafe } 
@@ -346,8 +462,8 @@ function SafeArea() {
                             >
                              
                             </Marker>
-                        )}
-                             
+                        )} */}
+                               
                                                                                                                                        
                   </MapContainer>
       </div>

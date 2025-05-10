@@ -178,7 +178,7 @@ function AddObject() {
 
                           <div className='AddObjectTitle'>
                               <div className='AddObjectTitleItem'>
-                                  Thêm đối tượng
+                                  Tạo mới đối tượng
                               </div> 
                           </div>
                          

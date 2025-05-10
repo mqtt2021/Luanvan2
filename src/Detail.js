@@ -11,19 +11,29 @@ import { LuAlarmClock } from "react-icons/lu";
 import { GrConnect } from "react-icons/gr";
 import {  toast } from 'react-toastify';
 import TimePicker from "react-time-picker";
-import "react-time-picker/dist/TimePicker.css";
+import "react-time-picker/dist/TimePicker.css";  
 import "react-clock/dist/Clock.css";
 import { AiFillWarning } from "react-icons/ai";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import moment from "moment";
 import { SlCheck } from "react-icons/sl";
 import { FaBell } from "react-icons/fa";
-import * as signalR from "@microsoft/signalr";   
-function Detail() {  
-   const [image, setImage] = useState(null);
+import * as signalR from "@microsoft/signalr";  
+import { MdOutlineDataThresholding } from "react-icons/md";
+import { GiNightSleep } from "react-icons/gi";
+import { MdCancel } from "react-icons/md";
+
+
+function Detail() {    
+    const [image, setImage] = useState(null);
     const [isPressed, setIsPressed] = useState(false);
+    const [isPressedBtnThreshold, setisPressedBtnThreshold] = useState(false);
     const [isOn, setIsOn] = useState(false);   
     const [isOnBuzzer, setIsOnBuzzer] = useState(false);   
+    const [isOnSleep, setIsOnSleep] = useState(false); 
+    const [threshold, setThreshold] = useState(0); 
+    const [selectedValue, setSelectedValue] = useState(1); // hoặc giá trị mặc định bạn muốn
+
     const [isEmergency, setIsEmergency] = useState(false);
     const location = useLocation();     
     const [time, setTime] = useState("00:00:00"); // Giá trị mặc định
@@ -148,14 +158,9 @@ function Detail() {
     useEffect(() => {  
       if(phone !== ''){
           getAllObject()   
-
-      }
-         
+      }  
     }, [phone])   
 
-    
-
-    
     useEffect(() => {  
         const deviceId = getDeviceIdFromURL();              
         setIdDevice(deviceId)
@@ -177,14 +182,7 @@ function Detail() {
       return `${day}-${month}-${year} ${time}`;
     }
 
-    
-    
-
     const [fileName, setFileName] = useState("");
-    
-    
-
-
     const sortByTimestamp = (data) => {
       return data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     };
@@ -238,6 +236,8 @@ const handleScanAndShow = async () => {
               "AlarmTime": `0001-01-01T${time}`,
               "BlueTooth": bluetoothStatus,  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Sleep": isOnSleep,
+              "Threshold": threshold,
               "Emergency": isEmergency,  
               "PhoneNumber": phoneNumer
             }
@@ -273,6 +273,8 @@ const handleScanAndShow = async () => {
               "AlarmTime": `0001-01-01T${time}`,  
               "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Buzzer": BuzzerStatus,  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Sleep": isOnSleep,
+              "Threshold": threshold,
               "Emergency": isEmergency,
               "PhoneNumber": phoneNumer
             }
@@ -294,6 +296,43 @@ const handleScanAndShow = async () => {
     };
 
 
+    const callAPIUpdateObjectSleepById = async (SleepStatus) => {
+      const phoneNumer = sessionStorage.getItem('phoneNumer');
+      let success = false;
+      while (!success) {     
+        try {
+          const response = await axios.patch(`${url}/GPSObject/UpdateObjectInformation?ObjectId=${ObjectIsConnect.id}`, 
+            {
+              "Longitude": ObjectIsConnect.longitude,
+              "Latitude": ObjectIsConnect.latitude,
+              "SafeRadius": ObjectIsConnect.safeRadius,
+              "CurrentTime": "0001-01-01T00:00:00",   
+              "AlarmTime": `0001-01-01T${time}`,  
+              "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Emergency": isEmergency,
+              "Sleep": SleepStatus,
+              "Threshold": threshold,
+              "PhoneNumber": phoneNumer  
+            }
+          );
+
+          const ObjectData = response.data;
+          if (ObjectData === 'Update successfully!') { 
+            toast.success(`${SleepStatus ? "Tắt chức năng chống trộm" : "Bật chức năng chống trộm"}`);
+            success = true;
+          } else {  
+            toast.error(`Gửi yêu cầu ${SleepStatus ? "ngủ" : "thức"} không thành công`);
+          }
+
+        } catch (error) {
+          toast.error(`Gửi yêu cầu ${SleepStatus === "ON" ? "ngủ" : "thức"} không thành công`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); 
+        }
+      }
+    };
+
+
 
     const callAPIUpdateObjecEmergencytById = async (StatusEmergency) => {
 
@@ -303,6 +342,8 @@ const handleScanAndShow = async () => {
         try {
 
           const phoneNumer = sessionStorage.getItem('phoneNumer');
+          
+          
           const response = await axios.patch(`${url}/GPSObject/UpdateObjectInformation?ObjectId=${ObjectIsConnect.id}`, 
             {
               "Longitude": ObjectIsConnect.longitude,
@@ -313,7 +354,9 @@ const handleScanAndShow = async () => {
               "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Emergency": StatusEmergency,
-              "PhoneNumber": phoneNumer
+              "PhoneNumber": phoneNumer,
+              "Sleep": isOnSleep,
+              "Threshold": threshold,
             }
           );
 
@@ -336,6 +379,9 @@ const handleScanAndShow = async () => {
     const callAPIUpdateObjecAlarmTimetById = async (timeObject) => {
       let success = false;
       while (!success) {   
+
+        const phoneNumer = sessionStorage.getItem('phoneNumer');
+
         try {
           const response = await axios.patch(`${url}/GPSObject/UpdateObjectInformation?ObjectId=${ObjectIsConnect.id}`, 
             {
@@ -343,11 +389,13 @@ const handleScanAndShow = async () => {
               "Latitude": ObjectIsConnect.latitude,
               "SafeRadius": ObjectIsConnect.safeRadius,
               "CurrentTime": "0001-01-01T00:00:00",      
-              "AlarmTime": `0001-01-01T${timeObject}`,
+              "AlarmTime": `0001-01-01T${timeObject}`,  
               "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
               "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
-              "Emergency": isEmergency,    
-              "PhoneNumber": "0888927971"
+              "Sleep": isOnSleep,
+              "Threshold": threshold,
+              "Emergency": isEmergency,     
+              "PhoneNumber": phoneNumer  
             }
           );
 
@@ -367,10 +415,56 @@ const handleScanAndShow = async () => {
     };
 
 
+
+    const callAPIUpdateObjecThresholdById = async (threshold) => {
+      let success = false;
+      while (!success) {   
+
+        const phoneNumer = sessionStorage.getItem('phoneNumer');
+        try {
+          const response = await axios.patch(`${url}/GPSObject/UpdateObjectInformation?ObjectId=${ObjectIsConnect.id}`, 
+            {
+              "Longitude": ObjectIsConnect.longitude,
+              "Latitude": ObjectIsConnect.latitude,
+              "SafeRadius": ObjectIsConnect.safeRadius,
+              "CurrentTime": "0001-01-01T00:00:00",      
+              "AlarmTime": `0001-01-01T${time}`,
+              "BlueTooth": isOn ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Buzzer": isOnBuzzer ? "ON" : "OFF",  // ✅ Nhận giá trị "ON" hoặc "OFF"
+              "Sleep": isOnSleep,
+              "Threshold": threshold,
+              "Emergency": isEmergency,    
+              "PhoneNumber": phoneNumer  
+            }
+          );
+
+          const ObjectData = response.data;
+          //console.log(response.data)
+          if (ObjectData === 'Update successfully!') { 
+            toast.success(`Ngưỡng phát hiện là ${threshold} độ`);
+            success = true;
+          } else {  
+            toast.error("Xác lập không thành công");
+          }
+        } catch (error) {
+            toast.error("Xác lập không thành công");
+          await new Promise(resolve => setTimeout(resolve, 1000)); 
+        }
+      }
+    };
+
+
     const handleClickAlarmTime = async () => {
       setIsPressed(true);
       await callAPIUpdateObjecAlarmTimetById(time);
       setTimeout(() => setIsPressed(false), 200); // Giữ hiệu ứng 200ms
+    };
+
+
+    const handleClickThreshold = async () => {
+      setisPressedBtnThreshold(true);
+      await callAPIUpdateObjecThresholdById(threshold);  
+      setTimeout(() => setisPressedBtnThreshold(false), 200); // Giữ hiệu ứng 200ms
     };
 
     const firstRender = useRef(true); // Biến cờ để kiểm tra lần đầu render
@@ -382,8 +476,6 @@ const handleScanAndShow = async () => {
       //console.log("Đã chọn xong giờ:", time);
       // Có thể gọi API hoặc xử lý dữ liệu tại đây
     }, [time]); // Chạy khi `time` thay đổi, nhưng bỏ qua lần đầu tiên
-
-
 
     const formatDateTime = (date) => {
       if (!date) return "No date selected";
@@ -453,6 +545,13 @@ const CustomTooltip = ({ active, payload }) => {
                
     };
 
+    const toggleSwitchSleep = () => {
+      const newStatus = !isOnSleep;
+      setIsOnSleep(newStatus);                         
+      callAPIUpdateObjectSleepById(newStatus);
+               
+    };
+
     const toggleSwitchWarning = () => {
       const newStatus = !isEmergency;
       setIsEmergency(newStatus);
@@ -502,12 +601,22 @@ const CustomTooltip = ({ active, payload }) => {
 
       if(loggerId !== ""){
         if(dataArray.length > 0){ 
+
+          
           const buzzerEntry = dataArray.find(
             item => item.LoggerId === loggerId && item.Name === "Buzzer" 
           );
           const bluetoothEntry = dataArray.find(
             item => item.LoggerId === loggerId && item.Name === "Bluetooth" 
           );
+
+          const sleepEntry = dataArray.find(
+            item => item.LoggerId === loggerId && item.Name === "Sleep" 
+          );
+
+          const thresholdEntry = dataArray.find(
+            item => item.LoggerId === loggerId && item.Name === "Threshold" 
+          );   
   
           // console.log("id", loggerId )  
           // console.log("dataArray", dataArray )  
@@ -534,10 +643,22 @@ const CustomTooltip = ({ active, payload }) => {
               toast.success("Bluetooth đang đóng")           
             }
           }
-    
-          
 
-          
+          if(sleepEntry){   
+            if(sleepEntry.Value){   
+              setIsOnSleep(true)  
+              toast.success("Thiết bị đang ngủ")   
+            }  
+            if(!sleepEntry.Value){  
+              setIsOnSleep(false)  
+              toast.success("Thiết bị đang thức")          
+            }
+          }
+
+          if(thresholdEntry){
+              setThreshold(thresholdEntry.Value)
+              toast.success(`Ngưỡng phát hiện là ${thresholdEntry.Value} `)      
+          }
         }   
       }
     }
@@ -565,7 +686,7 @@ const CustomTooltip = ({ active, payload }) => {
 
                     connection.on(`SendAll`, data => {   
                             const obj = JSON.parse(data);
-                            //console.log(`📡 Get buffer:`, obj);
+                            console.log(`📡 Get buffer:`, obj);
                             if(ObjectIsConnect.id !== ""){
                               setBuffer(obj)        
                             }  
@@ -611,6 +732,37 @@ const CustomTooltip = ({ active, payload }) => {
                         }
                       }                    
                      });
+
+                     connection.on(`Sleep`, data => {
+                      const obj = JSON.parse(data);
+                      console.log(`📡 Get Sleep:`, obj);     
+                      if(ObjectIsConnect.id !== ""){
+                        if(obj.Value){   
+                          setIsOnSleep(true)
+                          toast.success("Thiết bị đang ngủ")   
+                        }
+                        if(!obj.Value){   
+                          setIsOnSleep(false)  
+                          toast.success("Thiết bị đang thức")
+                        }
+                      }                    
+                     });
+
+                     connection.on(`Threshold`, data => {
+                      const obj = JSON.parse(data);
+                      console.log(`📡 Get Threshold:`, obj);     
+                      if(ObjectIsConnect.id !== ""){
+                        
+                          setThreshold(obj.Value)
+                          toast.success(`Ngưỡng phát hiện là ${obj.Value} độ`)
+                        
+                        
+                      }                    
+                     });
+
+
+
+
                   })
                   .catch(err => {
                       console.error('Kết nối thất bại: ', err);
@@ -640,7 +792,7 @@ return (
 
               <div className='InforDetailDeviceTitle'>
                   <div className='InforDetailDeviceTitleItem'>
-                      Thông tin thiết bị
+                      Cấu hình thiết bị
                   </div>  
               </div>     
                 
@@ -728,10 +880,9 @@ return (
                                       {timestamp !== '01-01-2025 00:00:00' ? `${timestamp}` : `Chưa được cập nhật`}
                                 </div>                                
                           </div>                      
-
                         </div>
 
-                       
+
                         <div className='informationDeviceItem'>
                           <div className='informationDeviceItemFirst'>
                             <div className='informationDeviceItemFirstIcon'>
@@ -768,8 +919,38 @@ return (
                                         {ObjectIsConnect?.name || "Chưa có"}   
                                 </div>                                      
                           </div>
+                        </div> 
 
-                        </div>  
+
+
+
+                        <div className='informationDeviceItem'>
+                          <div className='informationDeviceItemFirst'>
+                              <div className='informationDeviceItemFirstIcon'>
+                                  <MdOutlineDataThresholding className='informationDeviceItemIcon'/>  
+                              </div>          
+                              <div className='informationDeviceItemFirstTitle'>Ngưỡng phát hiện:</div>
+                          </div> 
+                            
+                          <div className='informationDeviceItemSecond'>
+                              <div className='informationDeviceItemSecondText'>
+                                   <input
+                                   type="number"
+                                   min="1"
+                                   max="180"
+                                   style={{
+                                            border: '1px solid black',
+                                            borderRadius: '4px',
+                                            padding: '4px 8px',
+                                            width: '80px'
+                                          }}
+                                   value={threshold}
+                                   onChange={(e) => setThreshold(Number(e.target.value))}
+                                 />
+                              </div>
+                              <button className={`btnAlarm transition-all duration-200 active:scale-90 ${isPressedBtnThreshold ? "bg-gray-300" : ""}`}  onClick={() => handleClickThreshold()}><SlCheck className='iconConfirm'/></button>   
+                          </div>
+                        </div> 
 
                         <div className='informationDeviceItem'>
                           <div className='informationDeviceItemFirst'>
@@ -818,6 +999,32 @@ return (
                           </div>
                           </div>
                         </div>
+
+                        <div className='informationDeviceItem'>
+                          <div className='informationDeviceItemFirst'>
+                            <div className='informationDeviceItemFirstIcon'>
+                              <MdCancel className='informationDeviceItemIcon'/>  
+                            </div>                     
+                            <div className='informationDeviceItemFirstTitle'>Ngắt chống trộm:</div>
+                          </div>   
+
+                          <div className="informationDeviceItemSecond">
+
+                          <div className="flex items-center gap-3">
+                            <div                  
+                                className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition-all ${isOnSleep ? 'bg-green-500' : 'bg-red-500'}`} 
+                                onClick={toggleSwitchSleep}                              
+                            >
+                                <div 
+                                    className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${isOnSleep ? 'translate-x-7' : ''}`}
+                                ></div>
+                            </div>
+                            <span className={`text-sm font-semibold ${isOnSleep ? 'text-green-500' : 'text-red-500'}`}>{isOnSleep ? "ON" : "OFF"}</span>
+                          </div>
+                          </div>
+                        </div>
+
+
 
                         <div className='informationDeviceItem'>
                           <div className='informationDeviceItemFirst'>

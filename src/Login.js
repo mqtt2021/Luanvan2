@@ -7,7 +7,8 @@ import './Login.scss'
 import { url } from './services/UserService';
 import { UserContext } from './usercontext';
 import { FaLock } from "react-icons/fa";
-import logosawaco from './asset/images/LOGO_SAWACO.png'    
+// import logosawaco from './asset/images/LOGO_SAWACO.png'    
+import logosawaco from './asset/images/01_logobachkhoasang.png'    
 import { FaPhoneAlt } from "react-icons/fa"; 
 import {Link} from "react-router-dom";  
 import axios from 'axios';
@@ -123,12 +124,12 @@ function Login() {
                       <div className="loading-overlay">
                         <div className="loading-spinner"></div>
                       </div>
-                    )}  
+                    )}    
                   <div className='divLogoSawacoLogin'>
                       <img 
                         src={logosawaco} alt="Example" 
                         width="200" 
-                        height="150"
+                        height="150"    
                       />
                   </div>
                 <div class="wrapperLogin">

@@ -18,7 +18,7 @@ import ModelConfirm from './ModelConfirm';
 import { UserContext } from './usercontext';
 import { url } from './services/UserService';
 function Map() {  
-
+ 
   const { center, zoomLevel, setZoomLevel,
           percentBattery, getPositionUser, setCenter,       
           makerOpenPopup, pressPositionWarning,    
@@ -29,7 +29,7 @@ function Map() {
         } =  useContext(UserContext);           
   //const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
   const [showModalChangeName, setshowModalChangeName] = useState(false); // hiển thị bảng đổi tên
-  const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(5) // độ zoom map
+  const [ZOOM_LEVEL, setZOOM_LEVEL] = useState(9) // độ zoom map
   const [listAllLogger, setListAllLogger]= useState([]) // danh sách tất cả logger
   const mapRef = useRef()  
   const [positionUser, setpositionUser] = useState({ latitude: "", longtitude: "" }); //vị trí của người thay pin    
@@ -226,11 +226,15 @@ useEffect(() => {
 
 useEffect(()=>{
   if( percentBattery > 0 ) {   
-    const  listDataLoggerBattery = listAllLogger.filter((item,index)=> item.battery <= parseInt(percentBattery) )            
+    const  listDataLoggerBattery = listAllDevices.filter((item,index)=> item.battery <= parseInt(percentBattery) )            
     if(listDataLoggerBattery.length > 0  ){
       setlistLoggerBattery(listDataLoggerBattery)
       setCenter({ lat: 10.81993366729437, lng: 106.69843395240606  })
       setZoomLevel(9)
+
+      toast.success('Hiển thị các thiết bị có mức pin như yêu cầu') 
+
+
     }   
     else{
       setIsShowPositionUser(false)
@@ -660,7 +664,8 @@ function convertDateTimeBefore(inputString) {
                                                     <Link to={`/Devices/Setting/${item.id}/Detail`}>
                                                         <button className="btn btn-primary">Thông tin chi tiết</button>
                                                     </Link>
-                                            </div> 
+                                            </div>     
+                                              
 
                                             {/* <div className ='inforItem'>
                                                 <div className='title'>Vị trí hiện tại:</div>
@@ -715,7 +720,88 @@ function convertDateTimeBefore(inputString) {
                                                <div className='value'>
                                                  <div className='value'>{item.battery} %</div>   
                                                </div>
+                                           </div>
+                                           <div className ='inforItem'>
+                                                <div className='title'>Cập nhật gần nhất:</div>
+                                                <div className='value'>
+                                                  <div className='value'>{convertDateTimeBefore(item.timeStamp)}</div>   
+                                                </div>
+                                            </div>
+                                            <div className ='inforItem ItemButton'>
+                                            
+                                                <Link to={`/Devices/Setting/${item.id}/Detail`}>
+                                                    <button className="btn btn-primary">Thông tin chi tiết</button>
+                                                </Link>
+                                            </div>   
+                                           {/* <div className ='inforItem'>
+                                               <div className='title'>Vị trí hiện tại:</div>
+                                               <div className='value'>
+                                                 <div className='value'>   
+                                                       <div className="value">{isHaveDeviceAddresses ? cleanAddress(deviceAddresses[item.id]) : "Đang tải..."}</div>
+                                                 </div>      
+                                               </div>
+                                           </div>  */}
+
+
+
+
+                                         </div>                                                                                                
+                                           {/* <div className='button'>
+                                             <button type="button" class="btn btn-primary" data-mdb-ripple-init
+                                                    onClick={()=>handleshowModalChangeName(item)}
+                                             >Đổi tên</button>   
+                                           </div>                                   */}
+                                       </div>                                                                             
+                                   </Popup>  
+                                     
+                               </Marker> 
+                                
+                               )) : ''}
+
+
+
+
+                               { listLoggerBattery.length > 0 ? listLoggerBattery.map((item , index)=> (
+                                    
+                                 <Marker     
+                                     className='maker'
+                                     position={[item.latitude , item.longitude]}  
+                                     icon= { battery }         
+                                     key={index}     
+                                     zIndexOffset={  4000 }                             
+                                 >   
+                                      <Popup>
+                                       <div className='div-popup'>
+                                         <div className='infor'>
+                                           {/* <div className ='inforItem'>   
+                                               <div className='title'>Đối tượng được theo dõi:</div>
+                                               <div className='value'>
+                                                     {listObject.find(device => device.gpsDeviceId === item.id )?.name ?? "Không tìm thấy thiết bị"}
+                                               </div>
+                                           </div>  */}
+                                           <div className ='inforItem'>   
+                                               <div className='title'>Thiết bị theo dõi:</div>
+                                               <div className='value'>{item.name}</div>
                                            </div> 
+
+                                           <div className ='inforItem'>
+                                               <div className='title'>Mức pin thiết bị:</div>
+                                               <div className='value'>
+                                                 <div className='value'>{item.battery} %</div>   
+                                               </div>
+                                           </div>
+                                           <div className ='inforItem'>
+                                                <div className='title'>Cập nhật gần nhất:</div>
+                                                <div className='value'>
+                                                  <div className='value'>{convertDateTimeBefore(item.timeStamp)}</div>   
+                                                </div>
+                                            </div>
+                                            <div className ='inforItem ItemButton'>
+                                            
+                                                <Link to={`/Devices/Setting/${item.id}/Detail`}>
+                                                    <button className="btn btn-primary">Thông tin chi tiết</button>
+                                                </Link>
+                                            </div>   
                                            {/* <div className ='inforItem'>
                                                <div className='title'>Vị trí hiện tại:</div>
                                                <div className='value'>

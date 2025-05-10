@@ -19,19 +19,29 @@ import {Link, useNavigate} from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { url } from './services/UserService';
 import * as signalR from "@microsoft/signalr";
+import useGeoLocation from "./useGeoLocation"
 function PositionDevice() {          
     const { id} = useParams(); // Lấy tham số động từ URL
-
+    const locationUser = useGeoLocation()  // lấy vị trí của người thay pin
     const {setPercentBattery, makerOpenPopup, setMakerOpenPopup } = useContext(UserContext);
     // const url = 'https://sawacoapi.azurewebsites.net' 
+    
     const positionDevice = new L.Icon({ // vị trí GPS khi bị trộm đi qua
         iconUrl: require("./asset/images/position.png" ),
         iconSize: [45,50],
         iconAnchor: [28, 50],// nhỏ thì sang phải, xuống     
         popupAnchor: [3, -40], 
     })   
+
+     const user = new L.Icon({  // vị trí người thay pin
+        iconUrl: require("./asset/images/maker_user.png" ),
+        iconSize: [60,60],
+        iconAnchor: [25, 50],
+        popupAnchor: [6, -40],    
+      })
     
-      
+    const [isShowPositionUser, setIsShowPositionUser] = useState(false); // hiển thị vị trí người thay pin
+    
     const [valueFrom, onChangeFrom] = useState(new Date());
     const [valueTo, onChangeTo] = useState(new Date());
     const [selectedOption, setSelectedOption] = useState('');
@@ -90,9 +100,20 @@ function PositionDevice() {
         getDeviceById()
         setPercentBattery(0)
         setMakerOpenPopup({})
+
+        
     }, [])
 
-    
+
+    useEffect(() => { 
+        if(locationUser.coordinates.latitude > 0){
+          setIsShowPositionUser(true);
+          if(DeviceMaker.latitude > 0){  
+            handleDisplayRoute()     
+            setCenter({lat: DeviceMaker.latitude ,lng: DeviceMaker.longitude})        
+          }
+        } 
+    }, [locationUser, DeviceMaker])
 
     useEffect(() => { // Cập nhật bản đồ với giá trị mới của center và ZOOM_LEVEL
         if (mapRef.current) {
@@ -101,40 +122,35 @@ function PositionDevice() {
       }, [center]);
 
     const currentRoutingRef = useRef(null);
-    
-    // const handleDisplayRoute = (list) => {  // hiển thị đường đi của GPS Tracker
-    //       const lineStolen = list.map((item) => L.latLng(item.latitude, item.longtitude));
-  
-    //       currentRoutingRef.current = L.Routing.control({
-    //       waypoints: [
-    //       // L.latLng(ListPositionSafety[0].lat, ListPositionSafety[0].lng),        
-    //           ...lineStolen
-    //       ],
-    //       lineOptions: {   
-    //         styles: [
-    //           {
-    //             color: "blue",
-    //             opacity: 1,
-    //             weight: 8
-    //           }
-    //         ]
-    //       },  
-    //       routeWhileDragging: true,   
-    //       addWaypoints: false, 
-    //       draggableWaypoints: false,
-    //       fitSelectedRoutes: false,
-    //       showAlternatives: false,
-    //       show: false,
-    //       createMarker: function() { return null; }        
-    //       });
-    //       currentRoutingRef.current.addTo(mapRef.current);
-    // }
-
-   
-
-    
-
-   
+    const handleDisplayRoute = () => {  // hiển thị đường đi của GPS Tracker
+          // const lineStolen = list.map((item) => L.latLng(item.latitude, item.longtitude));
+          if (currentRoutingRef.current) {
+            mapRef.current.removeControl(currentRoutingRef.current);
+          }
+          currentRoutingRef.current = L.Routing.control({
+          waypoints: [
+                    L.latLng(DeviceMaker.latitude,DeviceMaker.longitude),     
+                    L.latLng(locationUser.coordinates.latitude, locationUser.coordinates.longtitude)
+          ],
+          lineOptions: {   
+            styles: [
+              {
+                color: "blue",
+                opacity: 1,
+                weight: 8
+              }
+            ]
+          },  
+          routeWhileDragging: true,   
+          addWaypoints: false, 
+          draggableWaypoints: false,
+          fitSelectedRoutes: false,
+          showAlternatives: false,
+          show: false,
+          createMarker: function() { return null; }        
+          });
+          currentRoutingRef.current.addTo(mapRef.current);
+    }
 
     useEffect(() => {
          if(action === 'Delete'){
@@ -162,8 +178,6 @@ function PositionDevice() {
         setAddress("Đang xác định vị trí");      
       }    
     };
-
-
 
     function changeDateToFixed(timestamp) {
       const parts = timestamp.split('T');
@@ -214,12 +228,10 @@ function PositionDevice() {
     useEffect( () => {
 
       let connection = new signalR.HubConnectionBuilder()   
-      .withUrl("https://mygps.runasp.net/NotificationHub")   
+      .withUrl("https://mygps.runasp.net/NotificationHub")       
       .withAutomaticReconnect()    
       .build(); 
 
-     
-            
           // Bắt đầu kết nối   
           connection.start()   
               .then(() => {  
@@ -255,11 +267,6 @@ function PositionDevice() {
     };
 
     }, [Device] )
-
-
-   
-
-   
 
   return (   
     <div className='PositionDevice'> 
@@ -300,7 +307,19 @@ function PositionDevice() {
                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             
                         />
-                        <MyClickHandlerGetLocation onClick={handleMapClickGetLocation}/>                                                           
+                        <MyClickHandlerGetLocation onClick={handleMapClickGetLocation}/>   
+
+                          {isShowPositionUser && 
+                                  <Marker  
+                                      className='maker'
+                                      // position={[positionUser.latitude , positionUser.longtitude]}
+                                      position={[locationUser.coordinates.latitude, locationUser.coordinates.longtitude]}
+                                      icon= { user }                             
+                                  >
+                                  </Marker>
+                                }
+
+
                                 {/* {displayRoutes &&  listPositionWantToDisplay.map((item,index)=>(
                                   <Marker 
                                       className='maker'
@@ -324,30 +343,10 @@ function PositionDevice() {
                                       zIndexOffset={ 1000 } 
                                                                   
                                   >
-                                    {/* <Popup>   
-                                        <div className='div-popup'>
-                                        <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(begin.timestamp) : convertDateTimeAfter(begin.timestamp)}</div>                                                                
-                                        
-                                        
-                                        </div>                                                                             
-                                    </Popup>     */}
+                                   
                                 </Marker>
                                
-                                {/* {displayRoutes && 
-                                  <Marker 
-                                      className='maker'    
-                                      position={[end.latitude , end.longtitude]}
-                                      icon= { endMarker }
-                                      zIndexOffset={  1000 } 
-                                                                  
-                                  >
-                                    <Popup>
-                                        <div className='div-popup'>
-                                            <div>{ isConvertDateTimeInPopup ? convertDateTimeBefore(end.timestamp) : convertDateTimeAfter(end.timestamp)}</div>                                                                    
-                                        </div>                                                                             
-                                    </Popup>    
-                                </Marker>
-                                }  */}
+                               
 
 
                     </MapContainer>

@@ -18,7 +18,6 @@ const UserProvider = ({ children }) => {
   const [displayRoutesTwoPoint, setDisplayRoutesTwoPoint] = useState(false); 
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-
   const [listNotifications, setListNotifications] = useState([]);
     const [listAllDevices,setlistAllDevices] = useState([]) ;     
     const [inforCustomer, setInforCustomer] = useState({})   ;

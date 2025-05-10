@@ -7,7 +7,8 @@ import './Register.scss'
 import { url } from './services/UserService';
 import { UserContext } from './usercontext';
 import { FaLock } from "react-icons/fa";
-import logosawaco from './asset/images/LOGO_SAWACO.png'    
+// import logosawaco from './asset/images/LOGO_SAWACO.png'    
+import logosawaco from './asset/images/01_logobachkhoasang.png'     
 import { FaPhoneAlt } from "react-icons/fa";
 import axios from 'axios';
 

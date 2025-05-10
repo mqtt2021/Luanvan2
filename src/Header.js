@@ -20,7 +20,7 @@ import { UserContext } from './usercontext';
 import { TbGps } from "react-icons/tb";
 import { RiGpsFill } from "react-icons/ri";
 import { TbDeviceComputerCamera } from "react-icons/tb";
-import logo from './asset/images/01_logobachkhoasang.png'
+import logo from './asset/images/HCMUT_official_logo.png'
 import { IoMap } from "react-icons/io5";
 import { IoNotifications } from "react-icons/io5";
 import { url } from './services/UserService';
@@ -145,12 +145,14 @@ function Header() {
     } 
 
     const handleSelectPercentBattery = () => { 
-      if(location.pathname === '/') {
+      if(location.pathname === '/map') {
         setDisplayNav(false)     
         setPercentBattery(valueBattery)             
         setPressPercentBattery(pre=>!pre)   
       }      
     }
+
+    
     const handleChangeBattery = (event) => {
       setValueBattery(event.target.value); // Cập nhật giá trị khi trượt
     };  
@@ -395,7 +397,9 @@ function Header() {
                           </div>                         
                           
                           <div className='logoHCMUT'>  
-                              <img src={logo} alt="Example" />   
+                              <img src={logo} alt="Example" 
+                                   
+                              />   
                           </div>
 
                           <div className='divNameUser'>  
@@ -436,7 +440,7 @@ function Header() {
                                   </div>} 
                                  
 
-                                 {/* <Link to="/map">
+                                 <Link to="/map">
                                   <div className='NavigationItem NavigationItemBattery'
                                         onClick={handleShowPercentBattery}
                                   >
@@ -445,7 +449,7 @@ function Header() {
                                           <div>Thay Pin</div>
                                       </div>                                                                                                      
                                   </div>
-                                 </Link>     */}
+                                 </Link>    
 
                                   {showPercentBattery && 
                                   <div className='wrapBattery'>

@@ -198,6 +198,7 @@ function Notification() {
   useEffect(() => { 
     if(listNotifications.length > 0){
       setIsLoading(false); // Kết thúc loading sau khi lấy dữ liệu xong
+      toast.success("Đã lấy thành công danh sách thông báo")
     }                     
   }, [listNotifications])
 

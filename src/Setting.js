@@ -341,14 +341,14 @@ function Setting() {
                 <div className='SettingSecond'>
                      <div className='divSettingSecond'>
                           <Link  to={`/Devices/Setting/${id}/Detail`}>      
-                            <div className='SettingSecondItem'
+                            <div className='SettingSecondItem'    
                                         // onClick={handleshowModalDetail}
                             >  
                                     <div >
                                         <IoIosInformationCircle className='InforIcon'/>
                                     </div>
                                     <div>
-                                        Thông tin thiết bị  
+                                        Cấu hình thiết bị  
                                     </div>
                             </div>  
                           </Link>
